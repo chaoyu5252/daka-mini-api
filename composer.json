@@ -1,0 +1,12 @@
+{
+    "name": "root/fichat-api",
+    "authors": [
+        {
+            "name": "xzhengmao",
+            "email": "xzhengmao@yuanshuoit.com"
+        }
+    ],
+    "require": {
+    	"guzzlehttp/guzzle": "~6.0@dev"
+    }
+}

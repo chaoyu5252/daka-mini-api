@@ -1,0 +1,13 @@
+/cache/
+/config/development/
+.project
+temp.txt
+.buildpath
+.settings/
+.idea/workspace.xml
+.idea/
+logs/
+lib/wxpay/doc/~$README.doc
+
+
+/vendor/
