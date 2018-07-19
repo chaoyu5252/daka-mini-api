@@ -88,4 +88,5 @@ define('ERROR_TOKEN_TIMEOUT', 'E0002');
 define('ERROR_WX_DECRYPT', 'E0003');
 define('ERROR_NO_USER', 'E0004');
 define('ERROR_LOGIN_VERIFY', 'E0005');
+define('ERROR_LOGIC', 'E9999');
 

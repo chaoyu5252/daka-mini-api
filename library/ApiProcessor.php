@@ -125,7 +125,7 @@ class ApiProcessor {
 			}
 			$data = ['token'=>$token, 'uid'=>$user->id, 'login_status' => $loginStatus];
 			// 事务提交
-			return Utils::commitTcReturn($di, $data, 'E0000');
+			return Utils::commitTcReturn($di, $data, ERROR_SUCCESS);
 		} catch (\Exception $e) {
 			var_dump($e);
 			return Utils::processExceptionError($di, $e);

@@ -723,11 +723,11 @@ class Utils
 					return ReturnMessageManager::buildReturnMessage($errorInfo[1]);
 				} else {
 					$di->get('logger')->debug(self::makeLogMessage($di, $e));
-					return ReturnMessageManager::buildReturnMessage('E9999');
+					return ReturnMessageManager::buildReturnMessage(ERROR_LOGIC);
 				}
 			} else {
 				$di->get('logger')->debug(self::makeLogMessage($di, $e));
-				return ReturnMessageManager::buildReturnMessage('E9999');
+				return ReturnMessageManager::buildReturnMessage(ERROR_LOGIC);
 			}
 		}
 	}
