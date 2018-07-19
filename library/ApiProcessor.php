@@ -87,7 +87,7 @@ class ApiProcessor {
 			error_log('wx post code:'.$code);
 			$verfiyRs = WxLoginProxy::loginVerify($di, $code);
 			if (!$verfiyRs) {
-				return ReturnMessageManager::buildReturnMessage('E0009');
+				return ReturnMessageManager::buildReturnMessage(ERROR_LOGIN_VERIFY);
 			}
 			// 获取事务
 			$transaction = $di->get(SERVICE_TRANSACTION);
