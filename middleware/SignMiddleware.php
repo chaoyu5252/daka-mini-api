@@ -3,13 +3,12 @@
 namespace Fichat\Middleware;
 
 use Fichat\Common\ReturnMessageManager;
+use Fichat\Models\User;
+use Fichat\Utils\Utils;
 use Phalcon\Events\Event;
 use Phalcon\Exception;
 use Phalcon\Mvc\Micro;
 use Phalcon\Mvc\Micro\MiddlewareInterface;
-
-use Fichat\Common\APIValidator;
-use Fichat\Common\DBManager;
 
 
 class SignMiddleware implements MiddlewareInterface
@@ -44,28 +43,37 @@ class SignMiddleware implements MiddlewareInterface
                 // 从APP中获取配置文件
                 $config = $app->getDI()->get('config');
                 // 检查是否调试
-                if ($config['debug']['check_sign']) {
-                    $checkParamsCode = $this->checkBaseParams();
-                    // 如果参数不正确,返回错误码
-                    if ($checkParamsCode != 'E0000') {
-                        $app->response
-                            ->setJsonContent(ReturnMessageManager::buildReturnMessage($checkParamsCode, null))
-                            ->send();
-                        return false;
-                    }
-                    $uid = trim($_POST['userId']);
-                    // 获取token验证sign
-                    $token = DBManager::getToken($uid);
-                    // 验证结果
-                    $validSignCode = APIValidator::checkSign($_POST, $token);
-                    if ($validSignCode != 'E0000') {
-                        $app->response
-                            ->setJsonContent(ReturnMessageManager::buildReturnMessage($validSignCode))
-                            ->send();
-                        // 返回结果
-                        return false;
-                    }
-                }
+	            $token = $app->request->getHeader('D-TOKEN');
+	            if (!$token) {
+		            $app->response
+			            ->setJsonContent(ReturnMessageManager::buildReturnMessage(ERROR_TOKEN))
+			            ->send();
+	            	return false;
+	            }
+	
+	            // 检查token是否存在
+	            $user =User::findFirst("token = '".$token."'");
+	            if (!$user)
+	            {
+		            $app->response
+			            ->setJsonContent(ReturnMessageManager::buildReturnMessage(ERROR_TOKEN))
+			            ->send();
+	                return false;
+	            }
+	            
+	            // 检查token是否过期
+	            $now = time();
+	            if ($now > $user->token_sign_time) {
+		            $app->response
+			            ->setJsonContent(ReturnMessageManager::buildReturnMessage(ERROR_TOKEN_TIMEOUT))
+			            ->send();
+	            	return false;
+	            }
+	            
+	            $globalData = Utils::getService($app->getDI(), SERVICE_GLOBAL_DATA);
+	            $globalData->uid = $user->id;
+	            $globalData->token = $token;
+	            $globalData->sessionKey = $user->session_key;
             }
             return true;
         } catch (Exception $e) {

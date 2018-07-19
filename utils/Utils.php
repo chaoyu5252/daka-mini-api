@@ -9,7 +9,6 @@ use Fichat\Common\ReturnMessageManager;
 use Fichat\Common\DBManager;
 use Fichat\Constants\ErrorConstantsManager;
 use Fichat\Models\AssociationMember;
-use Fichat\Proxy\HxChatProxy;
 use Phalcon\Di;
 use Phalcon\Tag\Select;
 use Swoole\Exception;
@@ -17,6 +16,38 @@ use Swoole\Exception;
 
 class Utils
 {
+	
+	// 创造TOKEN
+	public static function makeToken($openid)
+	{
+		return md5($openid.'*'.TOKEN_MD5_KEY.'#'.time());
+	}
+	
+	// 获取服务
+	public static function getService($di, $serviceName) {
+		return $di->getShared($serviceName);
+	}
+	
+	// 发送http
+	public static function http_get($url){
+		$oCurl = curl_init();
+		if(stripos($url,"https://")!==FALSE){
+			curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
+			curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
+			curl_setopt($oCurl, CURLOPT_SSLVERSION, 1); //CURL_SSLVERSION_TLSv1
+		}
+		curl_setopt($oCurl, CURLOPT_URL, $url);//目标URL
+		curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );//设定是否显示头信息,1为显示
+		curl_setopt($oCurl, CURLOPT_BINARYTRANSFER, true) ;//在启用CURLOPT_RETURNTRANSFER时候将获取数据返回
+		$sContent = curl_exec($oCurl);
+		$aStatus = curl_getinfo($oCurl);//获取页面各种信息
+		curl_close($oCurl);
+		if(intval($aStatus["http_code"])==200){
+			return $sContent;
+		}else{
+			return false;
+		}
+	}
 	
 	// 生成UUID
 	public static function guid()

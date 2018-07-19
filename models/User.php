@@ -6,29 +6,23 @@ use Phalcon\Mvc\Model;
 
 class User extends Model {
 	public $id;
-	public $account_id;
-	public $phone;
-	public $nickname;
-	public $gender;
-	public $signature;
-	public $user_avatar;
-    public $user_thumb;
-	public $title_id;
-	public $level;
-	public $exp;
-	public $balance;
-	public $verify;
-	public $background;
-	public $background_thumb;
-	public $platform;
-	public $channel;
-	public $recommand_tags;
+	public $phone = '';
+	public $nickname = '';
+	public $gender = 1;
+    public $wx_avatar = '';
+	public $level = 1;
+	public $exp = 0;
+	public $balance = 0;
+	public $diamond = 0;
 	public $birthday = '1993-12-26';
 	public $email = '';
 	public $name = '';
+	public $session_key = '';
+	public $token = '';
+	public $token_sign_time = 0;
 	public $id_code = '';
-	public $invite_code = 0;
-	public $diamond = 0;
+	public $create_time;
+	public $update_time;
 
 	public function initialize() {
 		$this->belongsTo('account_id', __NAMESPACE__ . '\Account', 'id', array(

@@ -16,12 +16,10 @@ $config = new Config([
 		CONFIG_KEY_DB => [
 				'adapter' => 'Mysql',
 				'host' => '127.0.0.1',
-//				'username' => 'root',
-//				'password' => 'DKOLChina2016',
-                'username' => 'proxy',
-                'password' => 'p1r2o3xy',
-                'port' => 6033,
-				'dbname' => 'fichat_v2',
+				'port' => 3306,
+				'username' => 'root',
+				'password' => 'DKOLChina2016',
+				'dbname' => 'fichat_mini',
 				"charset" => "utf8mb4"
 		],
 		CONFIG_KEY_APP => [
@@ -101,6 +99,10 @@ $config = new Config([
 			'host' => '127.0.0.1',
 			'port' => 10000,
 			'timeout' => 3
+		],
+		CONFIG_KEY_WXMINI => [
+			'app_id' => 'wx929f0995fb3cd01f',
+			'app_key' => 'd6b2d3925e4177645b405145e0736325'
 		]
 	       
 ]);
@@ -128,12 +130,14 @@ $di = new FactoryDefault();
 /**
  * Register the global configuration as config
  */
-$di->set('config', $config);
+$di->setShared('config', function () use ($config) {
+	return $config;
+});
 
 /**
  * Database connection is created based in the parameters defined in the configuration file
  */
-$di->set('db', function () use ($config) {
+$di->setShared('db', function () use ($config) {
 	return new DbAdapter(array(
 			'host' => $config->database->host,
 			'username' => $config->database->username,
@@ -147,7 +151,7 @@ $di->set('db', function () use ($config) {
 /**
  * Crypt service
  */
-$di->set('crypt', function () use ($config) {
+$di->setShared('crypt', function () use ($config) {
 	$crypt = new Crypt();
 	$crypt->setKey($config->application->cryptSalt);
 	return $crypt;
@@ -166,7 +170,7 @@ $di->setShared('redis_conns', function () use ($config) {
  * Logger service
  */
 
-$di->set('logger', function () use ($config) {
+$di->setShared('logger', function () use ($config) {
 	$loggerFile = $config['logger']['path'] . $config['logger']['filename'];
 	$logger = new FileLogger($loggerFile, array(
 		'mode' => 'aw'
@@ -187,4 +191,8 @@ $di->setShared(SERVICE_TRANSACTION, function () {
 
 $di->setShared(SERVICE_REDIS, function () use ($config) {
 	return RedisClient::create($config['redis']);
+});
+
+$di->setShared(SERVICE_GLOBAL_DATA, function () {
+	return new \Fichat\Constants\GlobalData();
 });

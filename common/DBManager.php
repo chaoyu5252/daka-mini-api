@@ -48,7 +48,6 @@ use Fichat\Models\AssociationRequest;
 use Fichat\Models\MomentsGive;
 use Fichat\Models\UserTag;
 use Fichat\Proxy\BaiduPushProxy;
-use Fichat\Proxy\HxChatProxy;
 
 use Fichat\Utils\KaException;
 use Fichat\Utils\MessageSender;

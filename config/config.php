@@ -99,6 +99,10 @@ $config = new Config([
 			'host' => '127.0.0.1',
 			'port' => 10000,
 			'timeout' => 3
+		],
+		CONFIG_KEY_WXMINI => [
+			'app_id' => 'wx929f0995fb3cd01f',
+			'app_key' => 'd6b2d3925e4177645b405145e0736325'
 		]
 	       
 ]);
@@ -184,4 +188,8 @@ $di->setShared(SERVICE_TRANSACTION, function () {
 
 $di->setShared(SERVICE_REDIS, function () use ($config) {
 	return RedisClient::create($config['redis']);
+});
+
+$di->setShared(SERVICE_GLOBAL_DATA, function () {
+	return new \Fichat\Constants\GlobalData();
 });
