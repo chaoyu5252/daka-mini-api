@@ -12,6 +12,7 @@ class RewardTaskRecord extends Model
 	public $id;
 	public $task_id;
 	public $op_type;
+	public $count = 0;
 	public $uid;
 	public $status;
 	public $op_time;

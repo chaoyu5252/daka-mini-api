@@ -203,8 +203,8 @@ class ApiProcessor {
 	public static function loadTaskList($di)
 	{
 		try {
+			echo '1';
 			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
-			$uid = $gd->uid;
 			$page = $_POST['page'] ? intval($_POST['page']) : 1;
 			
 			$startIdx = ($page - 1) * PAGE_SIZE;
@@ -214,9 +214,10 @@ class ApiProcessor {
 				'limit' => PAGE_SIZE,
 				'order' => 'id desc'
 			]);
-			
-			var_dump($tasks);
 			$taskList = [];
+			if ($tasks) {
+				$taskList = $tasks->toArray();
+			}
 			
 			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_list' => $taskList]);
 		} catch (\Exception $e) {
@@ -227,13 +228,71 @@ class ApiProcessor {
 	// 拉取我参与的任务
 	public static function loadMyPubTaskList($di)
 	{
-	
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			$page = $_POST['page'] ? intval($_POST['page']) : 1;
+			
+			$startIdx = ($page - 1) * PAGE_SIZE;
+			
+			$tasks = RewardTask::find([
+				"conditions" => "owner_id = ".$uid,
+				'offset' => $startIdx,
+				'limit' => PAGE_SIZE,
+				'order' => 'id desc'
+			]);
+			$taskList = [];
+			if ($tasks) {
+				$taskList = $tasks->toArray();
+			}
+			
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_list' => $taskList]);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
 	}
 	
 	// 拉取我发布的任务
 	public static function loadMyJoinTaskList($di)
 	{
-	
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			$page = $_POST['page'] ? intval($_POST['page']) : 1;
+			
+			$startIdx = ($page - 1) * PAGE_SIZE;
+			// 查找我我任务记录
+			$records = RewardTaskRecord::find([
+				"conditions" => "uid = ".$uid,
+				"columns" => "task_id",
+				"group" => "task_id"
+			]);
+			
+			$taskIds = '';
+			foreach ($records as $record) {
+				$taskIds .= ','.$record->task_id;
+			}
+			$taskIds = substr($taskIds, 1);
+			$where = '1';
+			$taskList = [];
+			if ($taskIds) {
+				$where .= ' AND id in ('.$taskIds .')';
+				$tasks = RewardTask::find([
+					'conditions' => $where,
+					'offset' => $startIdx,
+					'limit' => PAGE_SIZE,
+					'order' => 'id desc'
+				]);
+				if ($tasks) {
+					$taskList = $tasks;
+				}
+			}
+			
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_list' => $taskList]);
+		} catch (\Exception $e) {
+			var_dump($e);
+			return Utils::processExceptionError($di, $e);
+		}
 	}
 	
 	// 发布悬赏任务
@@ -282,7 +341,6 @@ class ApiProcessor {
 			$task->balance = $taskAmount;
 			// 结束时间为两天后
 			$task->end_time = time() + 172800;
-			var_dump($task->toArray());
 			// 保存数据
 			if (!$task->save())
 			{
@@ -344,23 +402,176 @@ class ApiProcessor {
 	// 点击任务
 	public static function clickTask($di)
 	{
-	
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			
+			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
+			$task = RewardTask::findFirst([
+				"conditions" => "id = ".$taskId,
+				"for_update" => true
+			]);
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+			// 获取用户数据
+			$user = User::findFirst("id = ".$uid);
+			$user->setTransaction($transaction);
+			if (!$task) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
+			}
+			// 设置事物
+			$task->setTransaction($transaction);
+			
+			$data = [];
+			if ($task->status == TASK_STATUS_DONE) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_FINISHED);
+			}
+			$getMoney = floatval($task->click_price);
+			$balance = floatval($task->balance);
+			$taskBalance = $balance - $getMoney;
+			$taskStatus = $task->status;
+			if ($taskBalance == 0) {
+				$taskStatus = TASK_STATUS_DONE;
+			}
+			$task->balance = $taskBalance;
+			$task->status = $taskStatus;
+			$task->total_click_count += 1;
+			if (!$task->save()) {
+				$transaction -> rollback();
+			}
+			// 增加一条记录
+			$taskRecord = new RewardTaskRecord();
+			$taskRecord ->setTransaction($transaction);
+			$taskRecord -> op_type = TASK_OP_TYPE_CLICK;
+			$taskRecord -> task_id = $taskId;
+			$taskRecord -> uid = $uid;
+//			echo '5';
+			// 保存操作记录
+			if (!$taskRecord->save()) {
+				$transaction->rollback();
+			}
+			
+			// TODO 增加一条收入记录
+			$user -> balance += $getMoney;
+			if (!$user ->save()) {
+				$transaction->rollback();
+			}
+			// 事务提交
+			return Utils::commitTcReturn($di, $data, 'E0000');
+		} catch (Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
 	}
 	
 	// 分享任务
 	public static function shareTask($di)
 	{
-	
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			
+			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
+			$task = RewardTask::find([
+				"conditions" => "id = ".$taskId
+			]);
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+			// 检查任务是否存在
+			if (!$task) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
+			}
+			
+			// 增加一条记录
+			$taskRecord = new RewardTaskRecord();
+			$taskRecord ->setTransaction($transaction);
+			$taskRecord -> op_type = TASK_OP_TYPE_SHARE;
+			$taskRecord -> task_id = $taskId;
+			$taskRecord -> count = 0;
+			$taskRecord -> uid = $uid;
+			// 保存操作记录
+			if (!$taskRecord->save()) {
+				$transaction->rollback();
+			}
+			// 事务提交
+			return Utils::commitTcReturn($di, ['record_id' => $taskRecord->id], 'E0000');
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
 	}
 	
 	// 增加任务用户分享人数
 	public static function addTaskShareCount($di)
 	{
 		// 分享人数
-		
+		try {
+			
+			$recordId = $_POST['record_id'] ? intval($_POST['record_id']) : 0;
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+			
+			// 查询分享记录
+			$record = RewardTaskRecord::findFirst([
+				"conditions" => "id = ".$recordId,
+				"for_update" => true
+			]);
+			if (!$record) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_RECORD_NO_EXIST);
+			}
+			
+			$record->setTransaction($transaction);
+			
+			// 查询任务
+			$task = RewardTask::findFirst([
+				"conditions" => "id = ".$record->task_id,
+				"for_update" => true
+			]);
+			
+			if ($task->status == TASK_STATUS_DONE) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS);
+			}
+			
+			if ($record->count < $task->share_join_count) {
+				$record -> count += 1;
+				if ($record->count == $task->share_join_count) {
+					$task->total_share_count += 1;
+					$newTaskBalance = $task->balance - $task->share_price;
+					if ($newTaskBalance <= 0) {
+						$task->balance = 0;
+						$task->status = TASK_STATUS_DONE;
+					}
+					// 更新任务数据
+					if (!$task->save()) {
+						$transaction->rollback();
+					}
+					// 给用户钱
+					// TODO 增加一条余额操作记录
+					
+					$user = User::findFirst([
+						"conditions" => "id = ".$record->uid,
+						"for_update" => true
+					]);
+					$user->setTransaction($transaction);
+					$user->balance += $task->share_price;
+					if (!$user->save()) {
+						$transaction->rollback();
+					}
+				}
+			}
+			
+			// 保存
+			if(!$record->save()) {
+				$transaction->rollback();
+			}
+			
+			$data = [
+				'record_id' => $record->id,
+				'join_count' => $record->count
+			];
+			
+			// 事务提交
+			return Utils::commitTcReturn($di, $data, 'E0000');
+		} catch (\Exception $e) {
+			var_dump($e);
+			return Utils::processExceptionError($di, $e);
+		}
 	}
-	
- 
 
 }
 

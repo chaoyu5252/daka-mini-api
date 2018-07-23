@@ -17,6 +17,9 @@ class ErrorConstantsManager
 	    ERROR_TASK_SHARE_COUNT_LESS => '任务点击分数不能少于20份',
 	    ERROR_TASK_SHARE_COUNT_MORE => '任务点击分数不能大于100份',
 	    ERROR_TASK_CLICK_AND_SHARE_SUM_MORE => '分享和点击奖励总金额大于悬赏总金额',
+	    ERROR_TASK_NO_EXIST => '任务不存在',
+	    ERROR_TASK_FINISHED => '任务已经结束',
+	    ERROR_TASK_RECORD_NO_EXIST => '任务记录不存在',
 	    ERROR_UPLOAD => '上传文件失败',
 	    ERROR_UPLOAD_FILE_TYPE => '错误的文件类型',
 	    ERROR_LOGIC => '服务器内部错误'

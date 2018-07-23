@@ -86,6 +86,12 @@ define('FILE_TYPE_JPG', 1);
 define('FILE_TYPE_PNG', 2);
 define('FILE_TYPE_GIF', 3);
 
+define('TASK_STATUS_DOING', 1);
+define('TASK_STATUS_DONE', 2);
+
+define('TASK_OP_TYPE_CLICK', 1);
+define('TASK_OP_TYPE_SHARE', 2);
+
 /** 错误码 */
 define('ERROR_SUCCESS', 'E0000');
 define('ERROR_TOKEN', 'E0001');
@@ -100,6 +106,8 @@ define('ERROR_TASK_SHARE_PRICE', 'E0009');
 define('ERROR_TASK_CLICK_AND_SHARE_SUM_MORE', 'E0010');
 define('ERROR_TASK_SHARE_COUNT_LESS', 'E0010');
 define('ERROR_TASK_SHARE_COUNT_MORE', 'E0011');
+define('ERROR_TASK_NO_EXIST', 'E0012');
+define('ERROR_TASK_RECORD_NO_EXIST', 'E0013');
 define('ERROR_UPLOAD', 'E0303');
 define('ERROR_UPLOAD_FILE_TYPE', 'E0304');
 define('ERROR_LOGIC', 'E9999');

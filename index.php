@@ -75,6 +75,30 @@ $app->post('/_API/_checkBalance', function() use ($di){
 	return ApiProcessor::checkBalance($di);
 });
 
+$app->post('/_API/_loadTasks', function () use ($di) {
+	return ApiProcessor::loadTaskList($di);
+});
+
+$app->post('/_API/_myPubTasks', function () use ($di) {
+	return ApiProcessor::loadMyPubTaskList($di);
+});
+
+$app->post('/_API/_myJoinTasks', function () use ($di) {
+	return ApiProcessor::loadMyJoinTaskList($di);
+});
+
+$app->post('/_API/_clickTask', function () use ($di) {
+	return ApiProcessor::clickTask($di);
+});
+
+$app->post('/_API/_shareTask', function () use ($di) {
+	return ApiProcessor::shareTask($di);
+});
+
+$app->post('/_API/_shareTaskJoinCount', function () use ($di) {
+	return ApiProcessor::addTaskShareCount($di);
+});
+
 $app->post('/_API/_publishTask', function() use ($di){
 	return ApiProcessor::publishTask($di);
 });
