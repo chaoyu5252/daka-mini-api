@@ -67,6 +67,20 @@ $app->post('/_API/_wxUpUserInfo', function() use ($di){
 	return ApiProcessor::wxInitUserInfo($di);
 });
 
+$app->post('/_API/_upload', function() use ($di){
+	return ApiProcessor::uploadFile($di);
+});
+
+$app->post('/_API/_checkBalance', function() use ($di){
+	return ApiProcessor::checkBalance($di);
+});
+
+$app->post('/_API/_publishTask', function() use ($di){
+	return ApiProcessor::publishTask($di);
+});
+
+
+
 $app->notFound(function () use ($app) {
     $app->response->setStatusCode(404, "Not Found")->sendHeaders();
     return ['error_code'=>'E0404', 'message' => 'not found this page'];

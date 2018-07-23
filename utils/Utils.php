@@ -732,6 +732,13 @@ class Utils
 		}
 	}
 	
+	/** 获取毫秒 */
+	public static function getMicoTs()
+	{
+		list($msec, $sec) = explode(' ', microtime());
+		return sprintf('%.0f', (floatval($msec) + floatval($sec)) * 1000);
+	}
+	
 	/** 检查是否是json */
 	public static function isJson($jsonData)
 	{

@@ -81,6 +81,11 @@ define('LOGIN_STATUS_LOGIN', 1);
 define('LOGIN_STATUS_REG', 2);
 
 
+define('FILE_TYPE_NONE', 0);
+define('FILE_TYPE_JPG', 1);
+define('FILE_TYPE_PNG', 2);
+define('FILE_TYPE_GIF', 3);
+
 /** 错误码 */
 define('ERROR_SUCCESS', 'E0000');
 define('ERROR_TOKEN', 'E0001');
@@ -88,5 +93,14 @@ define('ERROR_TOKEN_TIMEOUT', 'E0002');
 define('ERROR_WX_DECRYPT', 'E0003');
 define('ERROR_NO_USER', 'E0004');
 define('ERROR_LOGIN_VERIFY', 'E0005');
+define('ERROR_MONEY', 'E0006');
+define('ERROR_TASK_CLICK_COUNT_LESS', 'E0007');
+define('ERROR_TASK_CLICK_PRICE', 'E0008');
+define('ERROR_TASK_SHARE_PRICE', 'E0009');
+define('ERROR_TASK_CLICK_AND_SHARE_SUM_MORE', 'E0010');
+define('ERROR_TASK_SHARE_COUNT_LESS', 'E0010');
+define('ERROR_TASK_SHARE_COUNT_MORE', 'E0011');
+define('ERROR_UPLOAD', 'E0303');
+define('ERROR_UPLOAD_FILE_TYPE', 'E0304');
 define('ERROR_LOGIC', 'E9999');
 

@@ -186,48 +186,13 @@ class OssProxy
 			if (!$ossClient->doesBucketExist($bucket['space'])) {
 				return null;
 			}
-			$previewOssRs = array();
-			// 检查文件是否是视频
-			if ($file_info['ext'] == '.mp4') {
-				$bucket = $ossConfig['bucket']['video'];
-//				$vBucket = $ossConfig['bucket']['video'];
-				// 构建视频缩略图
-//				$gifFileName = $files_info['file_name'].'.gif';
-				$previewFile = self::createVideoPreview($di, $file_info);
-				if ($previewFile) {
-					// 预览结果
-					$previewOssRs = $ossClient->uploadFile($bucket['space'], 'gif/' . $previewFile['previewFileId'], $previewFile['previewFile']);
-					if ($previewOssRs) {
-						$previewOssRs['gif'] = $previewOssRs['oss-request-url'];
-						// 删除临时文件
-						unlink($previewFile['previewFile']);
-					} else {
-						$previewOssRs['error'] = 'E0084';
-					}
-				} else {
-					$previewOssRs['error'] = 'E0305';
-				}
-			}
 			/** 根据类型上传文件
 			 * 文件会返回OSS缩略样式,OSS地址,以及上传前的文件名;
 			 * 如果中间有哪一个上传失败, 那么这一次数据就不会添加进返回结果;
 			 * 客户根据原文件名可以做比较, 看看是否都上传成功了.
 			 */
-			if (!$previewOssRs['error']) {
-				$file_name = $file_info['file_name'];
-				$ossRs = $ossClient->uploadFile($bucket['space'], $file_name, $file_info['upload_content']);
-				if ($ossRs) {
-					$ossRs['thumb'] = $file_info['thumb_style'];
-					$uploadRs = $ossRs;
-					if ($previewOssRs['gif']) {
-						$uploadRs['gif'] = $previewOssRs['gif'];
-					}
-				} else {
-					$uploadRs['error'] = 'E0084';
-				}
-			} else {
-				$uploadRs['error'] = $previewOssRs['error'];
-			}
+			$uploadRs['file_name'] = $file_info['file_name'];
+			$uploadRs['file_type'] = $file_info['file_type'];
 			return $uploadRs;
 		} catch (OssException $e) {
 //			printf(__FUNCTION__, $e->getMessage());
@@ -397,7 +362,9 @@ class OssProxy
 			$_FILES = $tmpFileInfo;
 		}
 		// 获取文件扩展名
-		$file_ext = self::getExtName($_FILES[$file_key]['type']);
+		$file_ext_info = self::getExtName($_FILES[$file_key]['type']);
+		$file_ext = $file_ext_info[0];
+		$file_type = $file_ext_info[1];
 		$upload_content = ['data' => $_FILES[$file_key]['tmp_name'], 'name' => $_FILES[$file_key]['name'], 'ext' => $file_ext];
 		// 循环处理上传的数据
 		$ts = time();
@@ -426,8 +393,8 @@ class OssProxy
 			'file_name' => $file_name,
 			'origin_file_name' => $upload_content['name'],
 			'upload_content' => $upload_content['data'],
-			'thumb_style' => $thumb_style,
-			'ext' => $upload_content['ext']
+			'ext' => $upload_content['ext'],
+			'file_type' => $file_type
 		];
 //		array_push($returnUploadRs, [
 //			'file_name' => $file_name,
@@ -549,16 +516,12 @@ class OssProxy
 	{
 //		Utils::echo_debug($file_type);
 		if ($file_type == 'image/jpeg' || $file_type == 'image/jpg') {
-			return '.jpg';
+			return ['.jpg', FILE_TYPE_JPG];
 		} else if ($file_type == 'image/gif') {
-			return '.gif';
+			return ['.gif', FILE_TYPE_GIF];
 		} else if ($file_type == 'image/png') {
-			return '.png';
-		} else if ($file_type == 'video/mp4') {
-			// 视频格式
-			return '.mp4';
+			return ['.png', FILE_TYPE_PNG];
 		} else {
-//			Utils::echo_debug($file_type);
 			Utils::throwErrorCode('E0304');
 		}
 	}

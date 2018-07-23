@@ -6,6 +6,7 @@ use Fichat\Common\ReturnMessageManager;
 use Fichat\Common\DBManager;
 use Fichat\Models\AssociationMember;
 use Fichat\Models\Feedback;
+use Fichat\Models\Files;
 use Fichat\Models\OssFdelQueue;
 use Fichat\Models\RedPacket;
 use Fichat\Models\Report;
@@ -176,10 +177,189 @@ class ApiProcessor {
 			// 事务提交
 			return Utils::commitTcReturn($di, $data, 'E0000');
 		} catch (\Exception $e) {
-			return Common::procException($e);
+			return Utils::processExceptionError($di, $e);
 		}
 	}
-    
+	
+	// 检查余额是否足够
+	public static function checkBalance($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			$user = User::findFirst("id = ".$uid);
+			
+			$needMoney = $_POST['needMoney'] ? intval($_POST['needMoney']) : 0;
+			if ($user->balance < $needMoney) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_MONEY);
+			}
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['balance' => $user->balance]);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	// 拉取悬赏任务列表
+	public static function loadTaskList($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			$page = $_POST['page'] ? intval($_POST['page']) : 1;
+			
+			$startIdx = ($page - 1) * PAGE_SIZE;
+			
+			$tasks = RewardTask::find([
+				'offset' => $startIdx,
+				'limit' => PAGE_SIZE,
+				'order' => 'id desc'
+			]);
+			
+			var_dump($tasks);
+			$taskList = [];
+			
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_list' => $taskList]);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	// 拉取我参与的任务
+	public static function loadMyPubTaskList($di)
+	{
+	
+	}
+	
+	// 拉取我发布的任务
+	public static function loadMyJoinTaskList($di)
+	{
+	
+	}
+	
+	// 发布悬赏任务
+	public static function publishTask($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			$user = User::findFirst("id = ".$uid);
+			$transaction = $di->get(SERVICE_TRANSACTION);
+			$user->setTransaction($transaction);
+			
+			
+			// 检查任务的各项数据
+			$checkParamRs = DBManager::checkTaskParams($user);
+			if (array_key_exists('error_code', $checkParamRs)) {
+				return $checkParamRs;
+			}
+			
+			// 悬赏任务
+			$clickPrice = $checkParamRs['click_price'];
+			$clickCount = $checkParamRs['click_count'];
+			$shareCount = $checkParamRs['share_count'];
+			$shareJoinCount = $checkParamRs['share_join_count'];
+			$sharePrice = $checkParamRs['share_price'];
+			$taskAmount = $checkParamRs['task_money'];
+			$taskDesp = $checkParamRs['task_desp'];
+			$taskCoverFid = $checkParamRs['task_cover'];
+
+//			var_dump($_POST);
+			
+			// TODO: 保存一条消费记录
+			
+			// 保存任务信息
+			$task = new RewardTask();
+			$task->setTransaction($transaction);
+			$task->owner_id = $uid;
+			$task->content = $taskDesp;
+			$task->cover_pic = $taskCoverFid;
+			$task->task_amount = $taskAmount;
+			$task->click_price = $clickPrice;
+			$task->click_count = $clickCount;
+			$task->share_count = $shareCount;
+			$task->share_price = $sharePrice;
+			$task->share_join_count = $shareJoinCount;
+			$task->balance = $taskAmount;
+			// 结束时间为两天后
+			$task->end_time = time() + 172800;
+			var_dump($task->toArray());
+			// 保存数据
+			if (!$task->save())
+			{
+				$transaction->rollback();
+			}
+			
+			// 更新用户的balance
+			$leftbalance = $user->balance - $task->task_amount;
+			$user->balance = $leftbalance;
+			if (!$user->save()) {
+				$transaction->rollback();
+			}
+			
+			$data = [
+				'task_id' => $task->id
+			];
+			// 事务提交
+			return Utils::commitTcReturn($di, $data, 'E0000');
+		} catch (\Exception $e) {
+			var_dump($e);
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	/** 上传文件 */
+	public static function uploadFile($di)
+	{
+		try {
+			$id = Utils::getMicoTs();
+			$ossRs = OssProxy::ossUploadFile($di, OSS_BUCKET_RTCOVER, $id, UPLOAD_BUSS_RTCOVER, 'file', "");
+			if ($ossRs) {
+				$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+				$files = new Files();
+				$files->setTransaction($transaction);
+				$files->assign([
+					'url' => $ossRs['file_name'],
+					'type' => $ossRs['file_type'],
+					'file_index' => 0
+				]);
+				if(!$files->save()) {
+					var_dump($files->getMessage());
+					$transaction->rollback();
+				}
+				// 提交事务
+				$data = [
+					'fid' => intval($files->id)
+				];
+				// 事务提交
+				return Utils::commitTcReturn($di, $data, 'E0000');
+			} else {
+				return ReturnMessageManager::buildReturnMessage(ERROR_UPLOAD);
+			}
+		} catch (\Exception $e) {
+			var_dump($e);
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+ 
+	// 点击任务
+	public static function clickTask($di)
+	{
+	
+	}
+	
+	// 分享任务
+	public static function shareTask($di)
+	{
+	
+	}
+	
+	// 增加任务用户分享人数
+	public static function addTaskShareCount($di)
+	{
+		// 分享人数
+		
+	}
+	
  
 
 }

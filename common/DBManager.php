@@ -83,12 +83,98 @@ class DBManager {
 		return Account::findFirst("id = $accountId");
 	}
 	
+	// 检查任务各项参数
+	public static function checkTaskParams($user)
+	{
+		// 检查余额
+		$needMoney = $_POST['task_money'] ? $_POST['task_money'] : 0;
+		if ($user->balance < $needMoney) {
+			return ReturnMessageManager::buildReturnMessage(ERROR_MONEY);
+		}
+		
+		// 点击单价
+		$clickPrice = $_POST['click_price'] ? $_POST['click_price'] : 0;
+		if ($clickPrice < 0.01) {
+			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_CLICK_PRICE);
+		}
+		
+		// 点击赏金分数
+		$clickCount = $_POST['click_count'] ? intval($_POST['click_count']) : 0;
+		
+		if($clickCount < 50) {
+			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_CLICK_COUNT_LESS);
+		}
+		
+		// 检查分享份数
+		$shareCount = $_POST['share_count'] ? intval($_POST['share_count']) : 0;
+		if ($shareCount < 20) {
+			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_SHARE_COUNT_LESS);
+		}
+		
+		if ($shareCount > 100) {
+			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_SHARE_COUNT_MORE);
+		}
+		
+		// 分享参与人数
+		$shareJoinType = $_POST['share_join_count'] ? intval($_POST['share_join_count']) : 0;
+		$shareJoinCount = 50;
+		$minSharePrice = 25.00;
+		switch ($shareJoinType)
+		{
+			case 1:
+				$shareJoinCount = 10;
+				$minSharePrice = 2.50;
+				break;
+			case 2:
+				$shareJoinCount = 20;
+				$minSharePrice =6.00;
+				break;
+			case 3:
+				$shareJoinCount = 30;
+				$minSharePrice = 9.00;
+				break;
+			case 4:
+				$shareJoinCount = 40;
+				$minSharePrice = 15.00;
+				break;
+			default:
+				$shareJoinCount = 50;
+				$minSharePrice = 25.00;
+		}
+		
+		// 检查分享奖励金额
+		$sharePrice = $_POST['share_price'] ? intval($_POST['share_price']) : 0;
+		if ($sharePrice < $minSharePrice) {
+			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_SHARE_PRICE);
+		}
+		
+		// 检查点击和分享的总金额是否大于任务的总金额
+		$sumCost = $clickPrice * $clickCount + $sharePrice * $shareCount;
+		if ($sumCost > $needMoney) {
+			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_CLICK_AND_SHARE_SUM_MORE);
+		}
+		
+		
+		echo 'taskCoverFid:'. $_POST['task_cover'] ? intval($_POST['task_cover']) : 0;
+		// 返回任务信息
+		return [
+			'click_price' => $clickPrice,
+			'click_count' => $clickCount,
+			'share_count' => $shareCount,
+			'share_join_count' => $shareJoinCount,
+			'share_price' => $sharePrice,
+			'task_money' => $needMoney,
+			'task_desp' => trim($_POST['content']),
+			'task_cover' => $_POST['task_cover'] ? intval($_POST['task_cover']) : 0
+		];
+	}
+	
 	// username获取用户
 	public static function getUserByUsername($username) {
 		if(strlen($username) > 11){
 			return Account::findFirst("uid = '$username'");
 		}
-	
+		
 		return Account::findFirst("phone = '$username'");
 	}
 	
