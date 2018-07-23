@@ -7,37 +7,37 @@ use OSS\Core\OssException;
 
 // 上传业务类型 =======================================
 
-define('UPLOAD_BUSS_AVATAR', 1);
-define('UPLOAD_BUSS_MOMENT', 2);
-define('UPLOAD_BUSS_GROUP', 3);
-define('UPLOAD_BUSS_BG', 4);
-define('UPLOAD_BUSS_COMMON', 5);
-define('UPLOAD_BUSS_RTCOVER', 6);
-
-// 上传图片显示宏 =====================================
-define('UPLOAD_PIC_UAVATAR', '?x-oss-process=style/thumb_u_avatar');
-define('UPLOAD_PIC_GAVATAR', '?x-oss-process=style/thumb_g_avatar');
-define('UPLOAD_PIC_MRESIZE', '?x-oss-process=style/thumb_resize');
-define('UPLOAD_PIC_MRECLIP', '?x-oss-process=style/thumb_recrop');
-define('UPLOAD_PIC_RTCOVER', '?x-oss-process=style/thumb_u_avatar');
-define('UPLOAD_PIC_BG', '?x-oss-process=style/thumb_bg_resizecrop');
-
-define('UPLOAD_PIC_MXWD', 256);
-define('UPLOAD_PIC_MXHT', 384);
-
-define('UPLOAD_BG_MXWD', 540);
-define('UPLOAD_BG_MXHT', 270);
-
-define('UPLOAD_RTCOVER_MXWD', 540);
-define('UPLOAD_RTCOVER_MXHT', 270);
-
-define('OSS_BUCKET_UAVATAR', 'uavatar');
-define('OSS_BUCKET_MOMENTS', 'moments');
-define('OSS_BUCKET_RTCOVER', 'rtcover');
-define('OSS_BUCKET_GAVATAR', 'gavatar');
-define('OSS_BUCKET_BG', 'background');
-define('OSS_BUCKET_PUBLIC', 'public');
-define('OSS_BUCKET_VIDEO', 'video');
+//define('UPLOAD_BUSS_AVATAR', 1);
+//define('UPLOAD_BUSS_MOMENT', 2);
+//define('UPLOAD_BUSS_GROUP', 3);
+//define('UPLOAD_BUSS_BG', 4);
+//define('UPLOAD_BUSS_COMMON', 5);
+//define('UPLOAD_BUSS_RTCOVER', 6);
+//
+//// 上传图片显示宏 =====================================
+//define('UPLOAD_PIC_UAVATAR', '?x-oss-process=style/thumb_u_avatar');
+//define('UPLOAD_PIC_GAVATAR', '?x-oss-process=style/thumb_g_avatar');
+//define('UPLOAD_PIC_MRESIZE', '?x-oss-process=style/thumb_resize');
+//define('UPLOAD_PIC_MRECLIP', '?x-oss-process=style/thumb_recrop');
+//define('UPLOAD_PIC_RTCOVER', '?x-oss-process=style/thumb_u_avatar');
+//define('UPLOAD_PIC_BG', '?x-oss-process=style/thumb_bg_resizecrop');
+//
+//define('UPLOAD_PIC_MXWD', 256);
+//define('UPLOAD_PIC_MXHT', 384);
+//
+//define('UPLOAD_BG_MXWD', 540);
+//define('UPLOAD_BG_MXHT', 270);
+//
+//define('UPLOAD_RTCOVER_MXWD', 540);
+//define('UPLOAD_RTCOVER_MXHT', 270);
+//
+//define('OSS_BUCKET_UAVATAR', 'uavatar');
+//define('OSS_BUCKET_MOMENTS', 'moments');
+//define('OSS_BUCKET_RTCOVER', 'rtcover');
+//define('OSS_BUCKET_GAVATAR', 'gavatar');
+//define('OSS_BUCKET_BG', 'background');
+//define('OSS_BUCKET_PUBLIC', 'public');
+//define('OSS_BUCKET_VIDEO', 'video');
 
 use Fichat\Utils\Utils;
 
