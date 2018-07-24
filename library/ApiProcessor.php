@@ -203,20 +203,22 @@ class ApiProcessor {
 	public static function loadTaskList($di)
 	{
 		try {
-			echo '1';
-			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
 			$page = $_POST['page'] ? intval($_POST['page']) : 1;
 			
 			$startIdx = ($page - 1) * PAGE_SIZE;
 			
-			$tasks = RewardTask::find([
-				'offset' => $startIdx,
-				'limit' => PAGE_SIZE,
-				'order' => 'id desc'
-			]);
+			$phpl = 'SELECT r.*, f.url FROM Fichat\Models\RewardTask as r '
+				.'LEFT JOIN Fichat\Models\Files as f ON r.cover_pic = f.id '
+				.'WHERE 1 ORDER BY r.id DESC LIMIT '.$startIdx.','.PAGE_SIZE;
+			$query = new Query($phpl, $di);
+			$tasks = $query->execute();
 			$taskList = [];
 			if ($tasks) {
-				$taskList = $tasks->toArray();
+				foreach ($tasks as $task) {
+					$item = $task->r->toArray();
+					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
+					array_push($taskList, $item);
+				}
 			}
 			
 			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_list' => $taskList]);
@@ -235,19 +237,23 @@ class ApiProcessor {
 			
 			$startIdx = ($page - 1) * PAGE_SIZE;
 			
-			$tasks = RewardTask::find([
-				"conditions" => "owner_id = ".$uid,
-				'offset' => $startIdx,
-				'limit' => PAGE_SIZE,
-				'order' => 'id desc'
-			]);
+			$phpl = 'SELECT r.*, f.url FROM Fichat\Models\RewardTask as r '
+					.'LEFT JOIN Fichat\Models\Files as f ON r.cover_pic = f.id '
+					.'WHERE r.owner_id ='.$uid. ' ORDER BY r.id DESC LIMIT '.$startIdx.','.PAGE_SIZE;
+			$query = new Query($phpl, $di);
+			$tasks = $query->execute();
 			$taskList = [];
 			if ($tasks) {
-				$taskList = $tasks->toArray();
+				foreach ($tasks as $task) {
+					$item = $task->r->toArray();
+					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
+					array_push($taskList, $item);
+				}
 			}
 			
 			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_list' => $taskList]);
 		} catch (\Exception $e) {
+			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
@@ -262,29 +268,19 @@ class ApiProcessor {
 			
 			$startIdx = ($page - 1) * PAGE_SIZE;
 			// 查找我我任务记录
-			$records = RewardTaskRecord::find([
-				"conditions" => "uid = ".$uid,
-				"columns" => "task_id",
-				"group" => "task_id"
-			]);
+			$phpl = 'SELECT DISTINCT (r.id), r.*, f.url FROM Fichat\Models\RewardTaskRecord as rr '
+					.'LEFT JOIN Fichat\Models\RewardTask as r ON rr.task_id = r.id '
+				    .'LEFT JOIN Fichat\Models\Files as f ON r.cover_pic = f.id '
+				.'WHERE rr.uid ='.$uid. ' ORDER BY r.id DESC LIMIT '.$startIdx.','.PAGE_SIZE;
+			$query = new Query($phpl, $di);
+			$tasks = $query->execute();
 			
-			$taskIds = '';
-			foreach ($records as $record) {
-				$taskIds .= ','.$record->task_id;
-			}
-			$taskIds = substr($taskIds, 1);
-			$where = '1';
 			$taskList = [];
-			if ($taskIds) {
-				$where .= ' AND id in ('.$taskIds .')';
-				$tasks = RewardTask::find([
-					'conditions' => $where,
-					'offset' => $startIdx,
-					'limit' => PAGE_SIZE,
-					'order' => 'id desc'
-				]);
-				if ($tasks) {
-					$taskList = $tasks;
+			if ($tasks) {
+				foreach ($tasks as $task) {
+					$item = $task->r->toArray();
+					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
+					array_push($taskList, $item);
 				}
 			}
 			

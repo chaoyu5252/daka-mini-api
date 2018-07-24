@@ -103,6 +103,10 @@ $config = new Config([
 		CONFIG_KEY_WXMINI => [
 			'app_id' => 'wx929f0995fb3cd01f',
 			'app_key' => 'd6b2d3925e4177645b405145e0736325'
+		],
+		CONFIG_KEY_WXPAY => [
+			'mch_id' => '',
+			'mch_secret' => ''
 		]
 	       
 ]);

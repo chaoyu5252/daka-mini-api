@@ -186,11 +186,48 @@ class OssProxy
 			if (!$ossClient->doesBucketExist($bucket['space'])) {
 				return null;
 			}
+			$previewOssRs = array();
+			// 检查文件是否是视频
+			if ($file_info['ext'] == '.mp4') {
+				$bucket = $ossConfig['bucket']['video'];
+//				$vBucket = $ossConfig['bucket']['video'];
+				// 构建视频缩略图
+//				$gifFileName = $files_info['file_name'].'.gif';
+				$previewFile = self::createVideoPreview($di, $file_info);
+				if ($previewFile) {
+					// 预览结果
+					$previewOssRs = $ossClient->uploadFile($bucket['space'], 'gif/' . $previewFile['previewFileId'], $previewFile['previewFile']);
+					if ($previewOssRs) {
+						$previewOssRs['gif'] = $previewOssRs['oss-request-url'];
+						// 删除临时文件
+						unlink($previewFile['previewFile']);
+					} else {
+						$previewOssRs['error'] = 'E0084';
+					}
+				} else {
+					$previewOssRs['error'] = 'E0305';
+				}
+			}
 			/** 根据类型上传文件
 			 * 文件会返回OSS缩略样式,OSS地址,以及上传前的文件名;
 			 * 如果中间有哪一个上传失败, 那么这一次数据就不会添加进返回结果;
 			 * 客户根据原文件名可以做比较, 看看是否都上传成功了.
 			 */
+			if (!$previewOssRs['error']) {
+				$file_name = $file_info['file_name'];
+				$ossRs = $ossClient->uploadFile($bucket['space'], $file_name, $file_info['upload_content']);
+				if ($ossRs) {
+					$ossRs['thumb'] = $file_info['thumb_style'];
+					$uploadRs = $ossRs;
+					if ($previewOssRs['gif']) {
+						$uploadRs['gif'] = $previewOssRs['gif'];
+					}
+				} else {
+					$uploadRs['error'] = 'E0084';
+				}
+			} else {
+				$uploadRs['error'] = $previewOssRs['error'];
+			}
 			$uploadRs['file_name'] = $file_info['file_name'];
 			$uploadRs['file_type'] = $file_info['file_type'];
 			return $uploadRs;
@@ -200,6 +237,36 @@ class OssProxy
 			return $uploadRs['error'] = 'E0084';
 		}
 	}
+	
+//	public static function ossUploadFile($di, $bucket_name, $id, $type, $file_key, $file_prex = '')
+//	{
+//		// 上传返回结果
+//		$uploadRs = array();
+//		try {
+//			$ossConfig = $di->get('config')['ossConfig'];
+//			$bucket = $ossConfig['bucket'][$bucket_name];
+//			// 初始化oss客户端对象
+//			$ossClient = self::ossClient($ossConfig, $bucket['end_point']);
+//			// 处理文件信息
+//			$file_info = self::uploadFileInfo($type, $id, $file_key, $file_prex);
+////			// 检查空间是否存在
+//			if (!$ossClient->doesBucketExist($bucket['space'])) {
+//				return null;
+//			}
+//			/** 根据类型上传文件
+//			 * 文件会返回OSS缩略样式,OSS地址,以及上传前的文件名;
+//			 * 如果中间有哪一个上传失败, 那么这一次数据就不会添加进返回结果;
+//			 * 客户根据原文件名可以做比较, 看看是否都上传成功了.
+//			 */
+//			$uploadRs['file_name'] = $file_info['file_name'];
+//			$uploadRs['file_type'] = $file_info['file_type'];
+//			return $uploadRs;
+//		} catch (OssException $e) {
+////			printf(__FUNCTION__, $e->getMessage());
+////			printf($e->getMessage());
+//			return $uploadRs['error'] = 'E0084';
+//		}
+//	}
 
     /**
      * 将远程图片上传至OSS

@@ -12,6 +12,7 @@ include APP_DIR . '/config/config_dev.php';
 include APP_DIR . '/lib/aliyun-oss-sdk-2.2.3.phar';
 
 use Fichat\Library\ApiProcessor;
+use Fichat\Library\PayProcessor;
 
 use Phalcon\Mvc\Micro;
 use Phalcon\Events\Manager as EventManager;
@@ -101,6 +102,16 @@ $app->post('/_API/_shareTaskJoinCount', function () use ($di) {
 
 $app->post('/_API/_publishTask', function() use ($di){
 	return ApiProcessor::publishTask($di);
+});
+
+// 支付相关
+$app->post('/_API/_wxPayOrder', function() use ($di){
+	return PayProcessor::wxPayOrder($di);
+});
+
+
+$app->post('/_API/_wxPayNotify', function () use ($di) {
+	return PayProcessor::wxPayNotify($di);
 });
 
 

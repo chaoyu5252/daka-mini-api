@@ -28,6 +28,18 @@ class Utils
 		return $di->getShared($serviceName);
 	}
 	
+	// 输出图片完整地址
+	public static function getFullUrl($bucket, $file)
+	{
+		switch ($bucket) {
+			case OSS_BUCKET_RTCOVER:
+				return 'https://'.OSS_BUCKET_RTCOVER_REQ_ENDPOINT.'/'.$file;
+				break;
+			default:
+				return $file;
+		}
+	}
+	
 	// 发送http
 	public static function http_get($url){
 		$oCurl = curl_init();

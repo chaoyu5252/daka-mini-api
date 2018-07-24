@@ -29,6 +29,12 @@ class RewardTask extends Model
 		$this->belongsTo('owner_id', __NAMESPACE__ . '\User', 'id', array(
 				'alias' => 'user'
 		));
+		
+		$this->belongsTo('cover_pic', __NAMESPACE__ .'\Files', 'id');
+//		$this->hasOne('cover_pic', __NAMESPACE__ .'\Files', 'id', array(
+//				'alias' => 'files'
+//		));
+		
 		// 一对多关系
 		$this->hasMany("id", __NAMESPACE__.'\RewardTaskRecord', "task_id", array(
 			'alias' => 'rewardTaskRecord'

@@ -34,6 +34,31 @@ define('BALOP_TYPE_REDUCE', 2);
 // 分页宏
 define('PAGE_SIZE', 50);
 
+define('UPLOAD_BUSS_AVATAR', 1);
+define('UPLOAD_BUSS_MOMENT', 2);
+define('UPLOAD_BUSS_GROUP', 3);
+define('UPLOAD_BUSS_BG', 4);
+define('UPLOAD_BUSS_COMMON', 5);
+define('UPLOAD_BUSS_RTCOVER', 6);
+
+// 上传图片显示宏 =====================================
+define('UPLOAD_PIC_UAVATAR', '?x-oss-process=style/thumb_u_avatar');
+define('UPLOAD_PIC_GAVATAR', '?x-oss-process=style/thumb_g_avatar');
+define('UPLOAD_PIC_MRESIZE', '?x-oss-process=style/thumb_resize');
+define('UPLOAD_PIC_MRECLIP', '?x-oss-process=style/thumb_recrop');
+define('UPLOAD_PIC_RTCOVER', '?x-oss-process=style/thumb_u_avatar');
+define('UPLOAD_PIC_BG', '?x-oss-process=style/thumb_bg_resizecrop');
+
+define('OSS_BUCKET_UAVATAR', 'uavatar');
+define('OSS_BUCKET_MOMENTS', 'moments');
+define('OSS_BUCKET_RTCOVER', 'rtcover');
+define('OSS_BUCKET_GAVATAR', 'gavatar');
+define('OSS_BUCKET_BG', 'background');
+define('OSS_BUCKET_PUBLIC', 'public');
+
+define('OSS_BUCKET_RTCOVER_REQ_ENDPOINT', 'dakaapp-rtcover.oss-cn-beijing.aliyuncs.com');
+define('OSS_BUCKET_AVATAR_REQ_ENDPOINT', 'dakaapp-avatar.oss-cn-beijing.aliyuncs.com');
+
 // 服务宏
 define('SERVICE_TRANSACTION', 'transaction');
 define('SERVICE_REDIS', 'redis');
@@ -73,6 +98,7 @@ define('CONFIG_KEY_VIDEO_THUMB', 'videoThumb');
 define('CONFIG_KEY_OSS', 'ossConfig');
 define('CONFIG_KEY_SWOOLE', 'swoole');
 define('CONFIG_KEY_WXMINI', 'wxminiapp');
+define('CONFIG_KEY_WXPAY', 'wxminipay');
 
 define('TOKEN_MD5_KEY', "Ac9%98ZE");
 define('TOKEN_KEEP', 7200);             // 微信token时间为2个小时
@@ -80,6 +106,9 @@ define('TOKEN_KEEP', 7200);             // 微信token时间为2个小时
 define('LOGIN_STATUS_LOGIN', 1);
 define('LOGIN_STATUS_REG', 2);
 
+
+define('PAY_ITEM_RECHARGE', 1);
+define('PAY_ITEM_VIP', 2);
 
 define('FILE_TYPE_NONE', 0);
 define('FILE_TYPE_JPG', 1);
