@@ -1,17 +1,12 @@
 <?php
 namespace Fichat\Library;
 
-
 use Fichat\Common\ReturnMessageManager;
 use Fichat\Models\User;
+use Fichat\Models\UserOrder;
 use Fichat\Proxy\WeixinPay;
 use Fichat\Utils\Utils;
-use Phalcon\Config;
-use Phalcon\Db;
-use Phalcon\Debug;
-use Phalcon\Exception;
-use Phalcon\Mvc\Model\Query;
-use Phalcon\Paginator\Adapter\NativeArray as PaginatorArray;
+
 
 class PayProcessor {
 
@@ -24,9 +19,15 @@ class PayProcessor {
 	{
 		try {
 			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
 			$uid = $gd->uid;
 			
 			$payAmount = $_POST['pay_amount'] ? floatval($_POST['pay_amount']) : 0;
+			$payItem = $_POST['pay_item'] ? intval($payItem) : 0;
+			
+			if (!in_array($payItem, [PAY_ITEM_RECHARGE, PAY_ITEM_VIP, PAY_ITEM_TAKE])) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_PAY_ITEM);
+			}
 			
 			$config = Utils::getService($di, SERVICE_CONFIG);
 			$wxAppConfig = $config[CONFIG_KEY_WXMINI];
@@ -51,19 +52,21 @@ class PayProcessor {
 			$total_fee = floatval($payAmount * 100);
 			$body      = "账户充值";
 			
-			$openid = $user->openid;
-			
 			//保存订单
-			$payorder = new Payorder([
-				'user_id' => $uid,
-				'item_id' => PAY_ITEM_RECHARGE,
-				'out_trade_no' => $out_trade_no,
-				'total_fee' => $total_fee,
-				'status' => 0
-			]);
-			$payorder->save();
+			$userOrder = new UserOrder();
+			$userOrder->setTransaction($transaction);
+			$userOrder->user_id = $uid;
+			$userOrder->status = 0;
+			$userOrder->balance = $user->balance;
+			$userOrder->order_num = $out_trade_no;
+			$userOrder->amount = $total_fee;
+			$userOrder->consum_type = PAY_ITEM_RECHARGE;
+			// 保存用户订单
+			if (!$userOrder->save()){
+				$transaction->rollback();
+			}
 			//创建订单
-			$weixinpay = new WeixinPay($appid, $openid, $mch_id, $key, $out_trade_no, $body, $total_fee, $notify_url);
+			$weixinpay = new WeixinPay($appid, $user->openid, $mch_id, $key, $out_trade_no, $body, $total_fee, $notify_url);
 			$payReturn = $weixinpay->pay();
 			if (!array_key_exists('return_msg', $payReturn)) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['order_info' => $payReturn]);
@@ -78,8 +81,6 @@ class PayProcessor {
 	// 回调函数
 	public static function wxPayNotify($di) {
 		try {
-			
-			
 			// 获取微信支付回调数据
             if(isset($GLOBALS['HTTP_RAW_POST_DATA'])){
 	            $xml  = $GLOBALS['HTTP_RAW_POST_DATA'];
@@ -101,15 +102,14 @@ class PayProcessor {
 
             // 判断签名是否正确，判断支付状态
             if ( ($mySign===$wxSign) && ($data['return_code']=='SUCCESS') && ($data['result_code']=='SUCCESS') ) {
-	            $result         = $data;
+//	            $result         = $data;
 	            //获取服务器返回的数据
-	            $out_trade_no   = $data['out_trade_no'];    //订单单号
-	            $openid         = $data['openid'];          //付款人openID
-	            $total_fee      = $data['total_fee'];       //付款金额
-	            $transaction_id = $data['transaction_id'];  //微信支付流水号
+	            $out_trade_no   = $data['out_trade_no'];    // 订单单号
+	            $itemId         = $data['item_id'];         // 类型
+	            $total_fee      = $data['total_fee'];       // 付款金额
 	            
 	            /** TODO 支付成功结果处理 */
-//	            $this->PaySuccess($out_trade_no, $openid, $total_fee, $transaction_id);
+	            $result = self::PaySuccess($out_trade_no, $itemId, $total_fee);
             }else{
 	            $result = false;
             }
@@ -127,6 +127,50 @@ class PayProcessor {
 			return false;
 		}
 	}
+	
+	// 支付完成
+	private static function PaySuccess($out_trade_no, $itemId, $total_fee)
+	{
+		//获取订单信息
+		$payOrder = UserOrder::findFirst([
+			"conditions" => "order_num = ".$out_trade_no
+		]);
+		if (!$payOrder) {
+			return false;
+		}
+		// 已经处理过了
+		if ($payOrder->getData('status') == 1) {
+			return true;
+		}
+		
+		// 更新订单状态
+		$payOrder->status = 1;
+		if(!$payOrder->save()) {
+			return false;
+		}
+		
+		// 根据支付内容
+		if ($itemId == PAY_ITEM_RECHARGE) {
+			// 充值
+			$uid = $payOrder->user_id;
+			// 更新用户的余额
+			$user = User::findFirst("id = ".$uid);
+			if (!$user) {
+				return false;
+			}
+			// 保存用户数据
+			$newBalance = floatval($user->balance) + floatval($total_fee);
+			$user->balance = $newBalance;
+			if(!$user->save()) {
+				return false;
+			}
+		} else {
+			// VIP购买
+		}
+		// 返回
+		return true;
+	}
+	
 	
 	//xml转换成数组
 	private static function xml2array($xml)

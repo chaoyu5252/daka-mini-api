@@ -20,6 +20,7 @@ class ErrorConstantsManager
 	    ERROR_TASK_NO_EXIST => '任务不存在',
 	    ERROR_TASK_FINISHED => '任务已经结束',
 	    ERROR_TASK_RECORD_NO_EXIST => '任务记录不存在',
+	    ERROR_PAY_ITEM => '错误支付类型',
 	    ERROR_UPLOAD => '上传文件失败',
 	    ERROR_UPLOAD_FILE_TYPE => '错误的文件类型',
 	    ERROR_LOGIC => '服务器内部错误'

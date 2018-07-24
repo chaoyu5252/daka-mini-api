@@ -106,9 +106,10 @@ define('TOKEN_KEEP', 7200);             // 微信token时间为2个小时
 define('LOGIN_STATUS_LOGIN', 1);
 define('LOGIN_STATUS_REG', 2);
 
-
+/** 支付 */
 define('PAY_ITEM_RECHARGE', 1);
 define('PAY_ITEM_VIP', 2);
+define('PAY_ITEM_TAKE', 3);
 
 define('FILE_TYPE_NONE', 0);
 define('FILE_TYPE_JPG', 1);
@@ -120,6 +121,7 @@ define('TASK_STATUS_DONE', 2);
 
 define('TASK_OP_TYPE_CLICK', 1);
 define('TASK_OP_TYPE_SHARE', 2);
+
 
 /** 错误码 */
 define('ERROR_SUCCESS', 'E0000');
@@ -137,6 +139,7 @@ define('ERROR_TASK_SHARE_COUNT_LESS', 'E0010');
 define('ERROR_TASK_SHARE_COUNT_MORE', 'E0011');
 define('ERROR_TASK_NO_EXIST', 'E0012');
 define('ERROR_TASK_RECORD_NO_EXIST', 'E0013');
+define('ERROR_PAY_ITEM', 'E0014');
 define('ERROR_UPLOAD', 'E0303');
 define('ERROR_UPLOAD_FILE_TYPE', 'E0304');
 define('ERROR_LOGIC', 'E9999');
