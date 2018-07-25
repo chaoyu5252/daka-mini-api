@@ -81,12 +81,10 @@ class PayProcessor {
 	// 回调函数
 	public static function wxPayNotify($di) {
 		try {
+			error_log("wxPayNotify");
 			// 获取微信支付回调数据
-            if(isset($GLOBALS['HTTP_RAW_POST_DATA'])){
-	            $xml  = $GLOBALS['HTTP_RAW_POST_DATA'];
-            }else{
-	            $xml  = file_get_contents("php://input");
-            }
+            $xml  = file_get_contents("php://input");
+            error_log($xml);
             if(!$xml){
 	            exit();
             }
