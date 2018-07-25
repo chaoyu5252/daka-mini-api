@@ -122,7 +122,6 @@ define('TASK_STATUS_DONE', 2);
 define('TASK_OP_TYPE_CLICK', 1);
 define('TASK_OP_TYPE_SHARE', 2);
 
-
 /** 错误码 */
 define('ERROR_SUCCESS', 'E0000');
 define('ERROR_TOKEN', 'E0001');

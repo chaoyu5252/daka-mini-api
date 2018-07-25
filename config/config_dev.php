@@ -106,7 +106,7 @@ $config = new Config([
 		],
 		CONFIG_KEY_WXPAY => [
 			'mch_id' => '1486539082',
-			'mch_secret' => ''
+			'mch_secret' => '59E9555311FEFBDE87C5B2713A81F18F'
 		]
 	       
 ]);

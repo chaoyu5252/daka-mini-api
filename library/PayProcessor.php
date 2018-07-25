@@ -23,7 +23,7 @@ class PayProcessor {
 			$uid = $gd->uid;
 			
 			$payAmount = $_POST['pay_amount'] ? floatval($_POST['pay_amount']) : 0;
-			$payItem = $_POST['pay_item'] ? intval($payItem) : 0;
+			$payItem = $_POST['pay_item'] ? intval($_POST['pay_item']) : 0;
 			
 			if (!in_array($payItem, [PAY_ITEM_RECHARGE, PAY_ITEM_VIP, PAY_ITEM_TAKE])) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_PAY_ITEM);
@@ -35,7 +35,7 @@ class PayProcessor {
 			//配置信息
 			$appid      = $wxAppConfig['app_id'];
 			$mch_id     = $wxPayConfig['mch_id'];
-			$key        = $wxPayConfig['mch_secret'];
+			$mch_key        = $wxPayConfig['mch_secret'];
 			// 回调地址
 			$notify_url = $_SERVER['SERVER_NAME']."/_API/_wxPayNotify";
 			
@@ -66,7 +66,7 @@ class PayProcessor {
 				$transaction->rollback();
 			}
 			//创建订单
-			$weixinpay = new WeixinPay($appid, $user->openid, $mch_id, $key, $out_trade_no, $body, $total_fee, $notify_url);
+			$weixinpay = new WeixinPay($appid, $user->openid, $mch_id, $mch_key, $out_trade_no, $body, $total_fee, $notify_url);
 			$payReturn = $weixinpay->pay();
 			if (!array_key_exists('return_msg', $payReturn)) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['order_info' => $payReturn]);
