@@ -91,7 +91,7 @@ class PayProcessor {
 	            exit();
             }
             $data = self::xml2array($xml);
-
+			error_log(json_encode($data));
             //微信给的sign
             $wxSign = $data['sign'];
             unset($data['sign']);   //sign不参与签名算法
