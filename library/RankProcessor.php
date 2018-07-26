@@ -28,6 +28,7 @@ class RankProcessor {
 				$memberIds = substr($memberIds, 1);
 				$users = User::find("id in (".$memberIds.")");
 				foreach ($rankMembers as $memberId => $income) {
+					$income = $income ? floatval($income / 100) : 0;
 					foreach ($users as $user) {
 						if ($user->id = $memberId) {
 							$item = [
@@ -80,17 +81,16 @@ class RankProcessor {
 					return 1;
 				}
 			});
-			
-			
 			$data = [];
 			foreach ($rankMembers as $rankMember) {
 				foreach ($users as $user) {
 					if ($user->id == $rankMember[1]) {
+						$income = $rankMember[0] ? floatval($rankMember[0] /  100) : 0;
 						array_push($data, [
 							'nickname' => $user->nickname,
 							'avatar' => $user->wx_avatar,
 							'gender' => $user->gender,
-							'income' => $rankMember[0]
+							'income' => $income
 						]);
 						break 1;
 					}

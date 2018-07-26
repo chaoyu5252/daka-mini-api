@@ -475,7 +475,7 @@ class ApiProcessor {
 			$user -> task_income += $getMoney;
 			
 			// 推入收入到世界排行中
-			RedisManager::pushRank($redis, RedisClient::worldRankKey(), $user->id, $user->task_income);
+			RedisManager::pushRank($redis, RedisClient::worldRankKey(), $user->id, $user->task_income * 100);
 			
 			if (!$user ->save()) {
 				$transaction->rollback();
@@ -591,7 +591,7 @@ class ApiProcessor {
 					$user -> task_income += $getMoney;
 					
 					// 推入收入到世界排行中
-					RedisManager::pushRank($redis, RedisClient::worldRankKey(), $user->id, $user->task_income);
+					RedisManager::pushRank($redis, RedisClient::worldRankKey(), $user->id, $user->task_income * 100);
 					
 					if (!$user->save()) {
 						$transaction->rollback();
