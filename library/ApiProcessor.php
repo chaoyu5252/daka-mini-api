@@ -299,17 +299,21 @@ class ApiProcessor {
 			$tasks = $query->execute();
 			
 			$taskList = [];
+			$now = time();
 			if ($tasks) {
 				foreach ($tasks as $task) {
 					$item = $task->r->toArray();
 					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
+					$status = $item['status'];
+					if ($now >= $item['end_time']) {
+						$status = TASK_STATUS_END;
+					}
+					$item['status'] = $status;
 					array_push($taskList, $item);
 				}
 			}
-			
 			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_list' => $taskList]);
 		} catch (\Exception $e) {
-			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
@@ -344,7 +348,7 @@ class ApiProcessor {
 //			var_dump($_POST);
 			
 			// TODO: 保存一条消费记录
-			
+			$now = time();
 			// 保存任务信息
 			$task = new RewardTask();
 			$task->setTransaction($transaction);
@@ -358,8 +362,9 @@ class ApiProcessor {
 			$task->share_price = $sharePrice;
 			$task->share_join_count = $shareJoinCount;
 			$task->balance = $taskAmount;
+			$task->create_time = $now;
 			// 结束时间为两天后
-			$task->end_time = time() + 172800;
+			$task->end_time = $now + TASK_DURATION;
 			// 保存数据
 			if (!$task->save())
 			{
@@ -431,6 +436,12 @@ class ApiProcessor {
 				"conditions" => "id = ".$taskId,
 				"for_update" => true
 			]);
+			
+			// 检查用户是否已经点击过
+			if (RewardTaskRecord::findFirst([ "conditions" => "task_id=".$taskId." AND op_type = ".TASK_OP_TYPE_CLICK." AND uid = ".$uid])) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS);
+			}
+			
 			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
 			// 获取用户数据
 			$user = User::findFirst("id = ".$uid);
@@ -447,14 +458,17 @@ class ApiProcessor {
 			}
 			$getMoney = floatval($task->click_price);
 			$balance = floatval($task->balance);
+			$task->total_click_count += 1;
 			$taskBalance = $balance - $getMoney;
 			$taskStatus = $task->status;
 			if ($taskBalance == 0) {
 				$taskStatus = TASK_STATUS_DONE;
 			}
+			
+			// 获取任务的状态
+			$taskStatus = DBManager::getTaskStatus($task);
 			$task->balance = $taskBalance;
 			$task->status = $taskStatus;
-			$task->total_click_count += 1;
 			if (!$task->save()) {
 				$transaction -> rollback();
 			}
@@ -496,7 +510,7 @@ class ApiProcessor {
 			$uid = $gd->uid;
 			
 			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
-			$task = RewardTask::find([
+			$task = RewardTask::findFirst([
 				"conditions" => "id = ".$taskId
 			]);
 			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
@@ -505,6 +519,10 @@ class ApiProcessor {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
 			}
 			
+			// 检查用户是否已经点击过
+			if ($taskRecord = RewardTaskRecord::findFirst([ "conditions" => "task_id=".$taskId." AND op_type = ".TASK_OP_TYPE_SHARE." AND uid = ".$uid])) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['record_id' => $taskRecord->id]);
+			}
 			// 增加一条记录
 			$taskRecord = new RewardTaskRecord();
 			$taskRecord ->setTransaction($transaction);
@@ -512,6 +530,7 @@ class ApiProcessor {
 			$taskRecord -> task_id = $taskId;
 			$taskRecord -> count = 0;
 			$taskRecord -> uid = $uid;
+			
 			// 保存操作记录
 			if (!$taskRecord->save()) {
 				$transaction->rollback();
@@ -575,6 +594,10 @@ class ApiProcessor {
 						$task->balance = 0;
 						$task->status = TASK_STATUS_DONE;
 					}
+					
+					// 获取任务的状态
+					$taskStatus = DBManager::getTaskStatus($task);
+					$task->status = $taskStatus;
 					// 更新任务数据
 					if (!$task->save()) {
 						$transaction->rollback();

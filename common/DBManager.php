@@ -5378,6 +5378,15 @@ class DBManager {
             return false;
         }
     }
+    
+    public static function getTaskStatus(RewardTask $task) {
+        if ($task->click_count == $task->total_click_count && $task->share_count == $task->total_share_count && time() >= $task->end_time)
+        {
+            return TASK_STATUS_DONE;
+        } else {
+        	return $task->status;
+        }
+    }
 	
 	// 检查查看动态的权限
 //	public static function checkLookDynRights($uid, $targetId, $dynFriends)

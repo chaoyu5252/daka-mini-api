@@ -116,6 +116,9 @@ define('FILE_TYPE_JPG', 1);
 define('FILE_TYPE_PNG', 2);
 define('FILE_TYPE_GIF', 3);
 
+define('TASK_DURATION', 172800);
+
+define('TASK_STATUS_END', 0);
 define('TASK_STATUS_DOING', 1);
 define('TASK_STATUS_DONE', 2);
 
