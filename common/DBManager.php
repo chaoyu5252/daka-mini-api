@@ -155,7 +155,7 @@ class DBManager {
 		}
 		
 		
-		echo 'taskCoverFid:'. $_POST['task_cover'] ? intval($_POST['task_cover']) : 0;
+		// echo 'taskCoverFid:'. $_POST['task_cover'] ? intval($_POST['task_cover']) : 0;
 		// 返回任务信息
 		return [
 			'click_price' => $clickPrice,
