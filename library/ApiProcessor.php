@@ -529,7 +529,8 @@ class ApiProcessor {
 		// 分享人数
 		try {
 			$redis = Utils::getService($di, SERVICE_REDIS);
-			
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
 			$shareUid = $_POST['share_uid'] ? intval($_POST['share_uid']) : 0;
 			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
 			
@@ -555,10 +556,19 @@ class ApiProcessor {
 			if ($task->status == TASK_STATUS_DONE) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS);
 			}
+			if ($record->join_members) {
+				$joinMembers = json_decode($record->join_members);
+			} else {
+				$joinMembers = array();
+			}
 			
-			if ($record->count < $task->share_join_count) {
-				$record -> count += 1;
-				if ($record->count == $task->share_join_count) {
+			$recordJoinCount = count($joinMembers);
+			if ($recordJoinCount < $task->share_join_count) {
+				if (!in_array($uid, $joinMembers)) {
+					array_push($joinMembers, $uid);
+				}
+				$record -> join_members = json_encode($joinMembers);
+				if (count($joinMembers) == $task->share_join_count) {
 					$task->total_share_count += 1;
 					$newTaskBalance = $task->balance - $task->share_price;
 					if ($newTaskBalance <= 0) {
@@ -590,32 +600,62 @@ class ApiProcessor {
 			}
 			
 			// 保存好友关系, 我和分享人
-			$friend = new Friend();
-			$friend->setTransaction($transaction);
-			$friend->user_id = $uid;
-			$friend->friend_id = $shareUid;
-			if (!$friend->save()) {
-				$transaction->rollback();
+			if (!Friend::findFirst([
+				"conditions" => "user_id = ".$uid." AND friend_id = ".$shareUid
+			])) {
+				$friend = new Friend();
+				$friend->setTransaction($transaction);
+				$friend->user_id = $uid;
+				$friend->friend_id = $shareUid;
+				if (!$friend->save()) {
+					$transaction->rollback();
+				}
 			}
 			
 			// 保存好友关系, 分享人和我
-			$friend = new Friend();
-			$friend->setTransaction($transaction);
-			$friend->user_id = $shareUid;
-			$friend->friend_id = $uid;
-			if (!$friend->save()) {
-				$transaction->rollback();
+			if (!Friend::findFirst([
+				"conditions" => "user_id = ".$shareUid." AND friend_id = ".$uid
+			])) {
+				$friend = new Friend();
+				$friend->setTransaction($transaction);
+				$friend->user_id = $shareUid;
+				$friend->friend_id = $uid;
+				if (!$friend->save()) {
+					$transaction->rollback();
+				}
 			}
-			
 			// 保存
 			if(!$record->save()) {
 				$transaction->rollback();
 			}
 			
+			// 获取参与的用户
+			$joinMemberIds = '';
+			foreach ($joinMembers as $joinMember) {
+				$joinMemberIds .= ',' .$joinMember;
+			}
+			$joinShareMembers = [];
+			if ($joinMemberIds) {
+				$joinMemberIds = substr($joinMemberIds, 1);
+				// 查询所有用户
+				$joinUsers = User::find([
+					"conditions" => "id in (".$joinMemberIds.")"
+				]);
+				
+				foreach ($joinUsers as $joinUser) {
+					array_push($joinShareMembers, [
+						'id' => $joinUser->id,
+						'avatar' => $joinUser->wx_avatar,
+						'nickname' => $joinUser->nickname
+					]);
+				}
+			}
+			
 			// 返回数据
 			$data = [
 				'record_id' => $record->id,
-				'join_count' => $record->count
+				'join_count' => count($joinMembers),
+				'join_Members' => $joinShareMembers
 			];
 			$redis->close();
 			// 事务提交

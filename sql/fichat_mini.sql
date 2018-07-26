@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: 2018-07-23 09:20:10
+-- Generation Time: 2018-07-26 06:58:36
 -- 服务器版本： 5.7.21
 -- PHP Version: 7.1.14
 
@@ -21,6 +21,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `fichat_mini`
 --
+CREATE DATABASE IF NOT EXISTS `fichat_mini` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `fichat_mini`;
 
 -- --------------------------------------------------------
 
@@ -28,6 +30,7 @@ SET time_zone = "+00:00";
 -- 表的结构 `attention`
 --
 
+DROP TABLE IF EXISTS `attention`;
 CREATE TABLE `attention` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL COMMENT '用户id',
@@ -45,6 +48,7 @@ CREATE TABLE `attention` (
 -- 表的结构 `badge`
 --
 
+DROP TABLE IF EXISTS `badge`;
 CREATE TABLE `badge` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL COMMENT '用户id',
@@ -59,6 +63,7 @@ CREATE TABLE `badge` (
 -- 表的结构 `balance_flow`
 --
 
+DROP TABLE IF EXISTS `balance_flow`;
 CREATE TABLE `balance_flow` (
   `id` int(10) UNSIGNED NOT NULL COMMENT 'ID',
   `op_type` int(4) UNSIGNED NOT NULL DEFAULT '0' COMMENT '1: 充值 2: 体现 3: 发红包 4: 抢红包 5. 退换红包 6: 发悬赏 7: 提取悬赏佣金 8: 点击悬赏 9: 分享悬赏',
@@ -75,6 +80,7 @@ CREATE TABLE `balance_flow` (
 -- 表的结构 `best_number`
 --
 
+DROP TABLE IF EXISTS `best_number`;
 CREATE TABLE `best_number` (
   `id` int(11) NOT NULL,
   `type` int(2) NOT NULL COMMENT '类型 1:用户；2：家族',
@@ -89,6 +95,7 @@ CREATE TABLE `best_number` (
 -- 表的结构 `exchange_ka_mi_record`
 --
 
+DROP TABLE IF EXISTS `exchange_ka_mi_record`;
 CREATE TABLE `exchange_ka_mi_record` (
   `id` int(11) NOT NULL,
   `code` varchar(60) CHARACTER SET utf8mb4 NOT NULL COMMENT '编号',
@@ -103,6 +110,7 @@ CREATE TABLE `exchange_ka_mi_record` (
 -- 表的结构 `files`
 --
 
+DROP TABLE IF EXISTS `files`;
 CREATE TABLE `files` (
   `id` int(11) NOT NULL COMMENT 'id, 主键',
   `url` varchar(600) NOT NULL DEFAULT '',
@@ -112,12 +120,47 @@ CREATE TABLE `files` (
   `update_time` int(11) UNSIGNED NOT NULL DEFAULT '0' COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- 转存表中的数据 `files`
+--
+
+INSERT INTO `files` (`id`, `url`, `type`, `file_index`, `create_time`, `update_time`) VALUES
+(2, 'RTC1532415030020I1532415030.jpg', 1, 0, 1532414733, 1532414733),
+(3, 'RTC1532415030020I1532415030.jpg', 1, 0, 1532414826, 1532414826),
+(4, 'RTC1532415030020I1532415030.jpg', 1, 0, 1532415030, 1532415030),
+(5, 'RTC1532415102331I1532415102.jpg', 1, 0, 1532415102, 1532415102),
+(9, 'RTC1532415030020I1532415030.jpg', 1, 0, 1532338745, 1532338745);
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `friend`
+--
+
+DROP TABLE IF EXISTS `friend`;
+CREATE TABLE `friend` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL COMMENT '用户id',
+  `friend_id` int(11) NOT NULL COMMENT 'friendId',
+  `create_time` int(11) UNSIGNED NOT NULL DEFAULT '0' COMMENT '创建时间',
+  `update_time` int(11) UNSIGNED NOT NULL DEFAULT '0' COMMENT '更新时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- 转存表中的数据 `friend`
+--
+
+INSERT INTO `friend` (`id`, `user_id`, `friend_id`, `create_time`, `update_time`) VALUES
+(1, 1, 2, 1532587130, 1532587130),
+(2, 2, 1, 1532587130, 1532587130);
+
 -- --------------------------------------------------------
 
 --
 -- 表的结构 `money_flow`
 --
 
+DROP TABLE IF EXISTS `money_flow`;
 CREATE TABLE `money_flow` (
   `id` int(10) UNSIGNED NOT NULL COMMENT 'ID',
   `op_type` tinyint(4) UNSIGNED NOT NULL DEFAULT '0' COMMENT '操作类型, 1: 充值 2: 体现 3: 发红包 4: 抢红包 5. 退换红包 6: 发悬赏 7: 提取悬赏佣金 8: 点击悬赏 9: 分享悬赏 10: 提取悬赏佣金'
@@ -129,6 +172,7 @@ CREATE TABLE `money_flow` (
 -- 表的结构 `oss_fdel_queue`
 --
 
+DROP TABLE IF EXISTS `oss_fdel_queue`;
 CREATE TABLE `oss_fdel_queue` (
   `id` int(11) NOT NULL COMMENT '主键, 索引ID',
   `resource` varchar(255) DEFAULT NULL COMMENT '图片资源地址'
@@ -137,9 +181,34 @@ CREATE TABLE `oss_fdel_queue` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `pay_order`
+--
+
+DROP TABLE IF EXISTS `pay_order`;
+CREATE TABLE `pay_order` (
+  `id` int(11) NOT NULL COMMENT '用户订单表',
+  `user_id` int(11) NOT NULL COMMENT '用户id',
+  `balance` decimal(10,2) NOT NULL COMMENT '当时余额',
+  `pay_channel` tinyint(1) NOT NULL COMMENT '支付渠道:1，支付宝；2，微信',
+  `amount` decimal(10,2) NOT NULL COMMENT '订单金额',
+  `status` int(1) NOT NULL DEFAULT '0' COMMENT '订单状态',
+  `order_num` varchar(60) CHARACTER SET utf8 NOT NULL COMMENT '订单号',
+  `callback_data` text CHARACTER SET utf8 COMMENT '回调信息',
+  `consum_type` tinyint(1) NOT NULL COMMENT '交易类型 1,充值；2,提现,3:发朋友圈红包, 4: 发聊天红包,7:发悬赏',
+  `pay_account` varchar(25) DEFAULT NULL COMMENT '支付渠道账户',
+  `fee` float(10,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '手续费, 默认为0',
+  `remark` varchar(60) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
+  `create_date` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
+  `red_packet_gift_id` int(10) UNSIGNED DEFAULT '0' COMMENT '红包或礼物ID'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户订单表';
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `report`
 --
 
+DROP TABLE IF EXISTS `report`;
 CREATE TABLE `report` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL COMMENT '举报人ID',
@@ -157,6 +226,7 @@ CREATE TABLE `report` (
 -- 表的结构 `reward_task`
 --
 
+DROP TABLE IF EXISTS `reward_task`;
 CREATE TABLE `reward_task` (
   `id` int(10) NOT NULL COMMENT '任务ID',
   `owner_id` int(10) DEFAULT '0' COMMENT '任务发布人的user_id',
@@ -191,11 +261,12 @@ INSERT INTO `reward_task` (`id`, `owner_id`, `cover_pic`, `task_amount`, `click_
 -- 表的结构 `reward_task_record`
 --
 
+DROP TABLE IF EXISTS `reward_task_record`;
 CREATE TABLE `reward_task_record` (
   `id` int(10) NOT NULL COMMENT '记录ID',
   `task_id` int(10) NOT NULL COMMENT '任务ID',
   `op_type` tinyint(1) NOT NULL COMMENT '操作类型, 1: 点击, 2: 分享',
-  `count` int(6) UNSIGNED NOT NULL DEFAULT '0' COMMENT '分享加入到任务的人数',
+  `join_members` varchar(120) CHARACTER SET utf8 NOT NULL DEFAULT '' COMMENT '分享加入到任务的用户ID',
   `uid` int(10) NOT NULL COMMENT '操作人id',
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态, 0:无奖励操作, 1:有奖励操作',
   `op_time` int(11) NOT NULL DEFAULT '0' COMMENT '时间戳, 操作时间'
@@ -205,20 +276,19 @@ CREATE TABLE `reward_task_record` (
 -- 转存表中的数据 `reward_task_record`
 --
 
-INSERT INTO `reward_task_record` (`id`, `task_id`, `op_type`, `count`, `uid`, `status`, `op_time`) VALUES
-(1, 3, 1, 0, 1, 1, 0),
-(2, 3, 1, 0, 1, 1, 0),
-(3, 3, 1, 0, 1, 1, 0),
-(4, 3, 1, 0, 1, 1, 0),
-(5, 3, 1, 0, 1, 1, 0),
-(6, 3, 1, 0, 1, 1, 0),
-(7, 3, 1, 0, 1, 1, 0),
-(8, 3, 1, 0, 1, 1, 0),
-(9, 3, 1, 0, 1, 1, 0),
-(10, 3, 1, 0, 1, 1, 0),
-(11, 3, 2, 10, 1, 1, 0),
-(12, 3, 1, 0, 1, 1, 0),
-(13, 3, 1, 0, 1, 1, 0);
+INSERT INTO `reward_task_record` (`id`, `task_id`, `op_type`, `join_members`, `uid`, `status`, `op_time`) VALUES
+(1, 3, 1, '', 1, 1, 0),
+(2, 3, 1, '', 1, 1, 0),
+(3, 3, 1, '', 1, 1, 0),
+(4, 3, 1, '', 1, 1, 0),
+(5, 3, 1, '', 1, 1, 0),
+(6, 3, 1, '', 1, 1, 0),
+(7, 3, 1, '', 1, 1, 0),
+(8, 3, 1, '', 1, 1, 0),
+(9, 3, 1, '', 1, 1, 0),
+(10, 3, 1, '', 1, 1, 0),
+(11, 3, 2, '[\"3\",\"1\"]', 2, 1, 0),
+(13, 3, 1, '', 1, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -226,6 +296,7 @@ INSERT INTO `reward_task_record` (`id`, `task_id`, `op_type`, `count`, `uid`, `s
 -- 表的结构 `system_config`
 --
 
+DROP TABLE IF EXISTS `system_config`;
 CREATE TABLE `system_config` (
   `id` int(11) NOT NULL,
   `sms_code_expire_time` int(11) NOT NULL COMMENT '短信验证码的有效时间',
@@ -244,6 +315,7 @@ CREATE TABLE `system_config` (
 -- 表的结构 `system_dyn`
 --
 
+DROP TABLE IF EXISTS `system_dyn`;
 CREATE TABLE `system_dyn` (
   `id` int(10) UNSIGNED NOT NULL COMMENT '主键ID',
   `type` tinyint(4) NOT NULL DEFAULT '0' COMMENT '类型',
@@ -259,6 +331,7 @@ CREATE TABLE `system_dyn` (
 -- 表的结构 `system_hot`
 --
 
+DROP TABLE IF EXISTS `system_hot`;
 CREATE TABLE `system_hot` (
   `id` int(10) UNSIGNED NOT NULL COMMENT '主键ID',
   `type` tinyint(4) NOT NULL DEFAULT '0' COMMENT '类型',
@@ -274,6 +347,7 @@ CREATE TABLE `system_hot` (
 -- 表的结构 `system_money_flow`
 --
 
+DROP TABLE IF EXISTS `system_money_flow`;
 CREATE TABLE `system_money_flow` (
   `id` int(10) UNSIGNED NOT NULL COMMENT 'ID',
   `op_type` tinyint(4) UNSIGNED NOT NULL DEFAULT '0' COMMENT '1: 充值 2: 提现 3: 发布系统悬赏任务 4: 退还系统悬赏任务',
@@ -291,6 +365,7 @@ CREATE TABLE `system_money_flow` (
 -- 表的结构 `system_notice`
 --
 
+DROP TABLE IF EXISTS `system_notice`;
 CREATE TABLE `system_notice` (
   `id` int(10) UNSIGNED NOT NULL COMMENT '主键ID',
   `type` tinyint(4) NOT NULL DEFAULT '0' COMMENT '类型',
@@ -307,6 +382,7 @@ CREATE TABLE `system_notice` (
 -- 表的结构 `tag`
 --
 
+DROP TABLE IF EXISTS `tag`;
 CREATE TABLE `tag` (
   `id` int(8) NOT NULL COMMENT 'id',
   `tag` varchar(30) CHARACTER SET utf8 NOT NULL DEFAULT '' COMMENT '标签',
@@ -320,6 +396,7 @@ CREATE TABLE `tag` (
 -- 表的结构 `title`
 --
 
+DROP TABLE IF EXISTS `title`;
 CREATE TABLE `title` (
   `id` int(2) NOT NULL,
   `name` varchar(60) NOT NULL COMMENT '称号名称',
@@ -332,6 +409,7 @@ CREATE TABLE `title` (
 -- 表的结构 `user`
 --
 
+DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `id` int(11) NOT NULL,
   `openid` varchar(32) NOT NULL DEFAULT '',
@@ -343,6 +421,7 @@ CREATE TABLE `user` (
   `level` int(11) NOT NULL DEFAULT '1' COMMENT '等级',
   `exp` int(11) NOT NULL DEFAULT '0' COMMENT '经验值',
   `balance` decimal(10,2) NOT NULL COMMENT '钱包余额',
+  `task_income` float(8,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '任务收入',
   `diamond` int(11) NOT NULL COMMENT '钻石',
   `birthday` date NOT NULL DEFAULT '1993-12-26',
   `email` varchar(255) CHARACTER SET utf8 NOT NULL DEFAULT '' COMMENT '邮箱',
@@ -359,8 +438,11 @@ CREATE TABLE `user` (
 -- 转存表中的数据 `user`
 --
 
-INSERT INTO `user` (`id`, `openid`, `unionid`, `phone`, `nickname`, `gender`, `wx_avatar`, `level`, `exp`, `balance`, `diamond`, `birthday`, `email`, `name`, `token`, `session_key`, `token_sign_time`, `id_code`, `create_time`, `update_time`) VALUES
-(1, 'oFNkM5GVZgAHY0imzwxTML16CI5c', '', '', '胖胖', 1, 'https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83er8pEMibjoKicX2pYHuUZB5mCvRXlaGUj2TUwdtzTHBoDmgzUW6V9uzorIB6J2o5ZsChnZ4zW59JK3A/132', 1, 0, '99706.24', 0, '1993-12-26', '', '', 'c735bb4e155471921b3236dc260df51f', 'tZX2Dwz/rKoVTI4RWl108A==', 1532339960, '', 1531980525, 1532332760);
+INSERT INTO `user` (`id`, `openid`, `unionid`, `phone`, `nickname`, `gender`, `wx_avatar`, `level`, `exp`, `balance`, `task_income`, `diamond`, `birthday`, `email`, `name`, `token`, `session_key`, `token_sign_time`, `id_code`, `create_time`, `update_time`) VALUES
+(1, 'oFNkM5GVZgAHY0imzwxTML16CI5c', '', '', '胖胖', 1, 'https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83er8pEMibjoKicX2pYHuUZB5mCvRXlaGUj2TUwdtzTHBoDmgzUW6V9uzorIB6J2o5ZsChnZ4zW59JK3A/132', 1, 0, '99706.24', 0.00, 0, '1993-12-26', '', '', '8981f18a1b10535c73b46a6a4a185668', 'SFWS92mLQUF3ZND//3h8xQ==', 1532591360, '', 1531980525, 1532584160),
+(2, 'oFNkM5GVZgAHY0imzwxTML16CI5c', '', '', '胖胖2', 1, 'https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83er8pEMibjoKicX2pYHuUZB5mCvRXlaGUj2TUwdtzTHBoDmgzUW6V9uzorIB6J2o5ZsChnZ4zW59JK3A/132', 1, 0, '99706.24', 0.00, 0, '1993-12-26', '', '', '857170f73ffd9f54fabd1f2ca8ec1f86', 'cZ2PNuMSjAbobwJaUvzMaA==', 1532582995, '', 1531980525, 1532575795),
+(3, 'oFNkM5GVZgAHY0imzwxTML16CI5c', '', '', '胖胖3', 1, 'https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83er8pEMibjoKicX2pYHuUZB5mCvRXlaGUj2TUwdtzTHBoDmgzUW6V9uzorIB6J2o5ZsChnZ4zW59JK3A/132', 1, 0, '99706.24', 0.00, 0, '1993-12-26', '', '', '857170f73ffd9f54fabd1f2ca8ec1f86', 'cZ2PNuMSjAbobwJaUvzMaA==', 1532582995, '', 1531980525, 1532575795),
+(4, 'oFNkM5GVZgAHY0imzwxTML16CI5c', '', '', '胖胖4', 1, 'https://wx.qlogo.cn/mmopen/vi_32/DYAIOgq83er8pEMibjoKicX2pYHuUZB5mCvRXlaGUj2TUwdtzTHBoDmgzUW6V9uzorIB6J2o5ZsChnZ4zW59JK3A/132', 1, 0, '99706.24', 0.00, 0, '1993-12-26', '', '', '857170f73ffd9f54fabd1f2ca8ec1f86', 'cZ2PNuMSjAbobwJaUvzMaA==', 1532582995, '', 1531980525, 1532575795);
 
 -- --------------------------------------------------------
 
@@ -368,6 +450,7 @@ INSERT INTO `user` (`id`, `openid`, `unionid`, `phone`, `nickname`, `gender`, `w
 -- 表的结构 `user_attr`
 --
 
+DROP TABLE IF EXISTS `user_attr`;
 CREATE TABLE `user_attr` (
   `id` int(11) NOT NULL,
   `level` int(11) NOT NULL COMMENT '用户等级',
@@ -384,6 +467,7 @@ CREATE TABLE `user_attr` (
 -- 表的结构 `user_grab_red_packet`
 --
 
+DROP TABLE IF EXISTS `user_grab_red_packet`;
 CREATE TABLE `user_grab_red_packet` (
   `id` int(11) NOT NULL COMMENT '用户点击红包记录表',
   `user_id` int(11) NOT NULL COMMENT '用户id',
@@ -396,6 +480,7 @@ CREATE TABLE `user_grab_red_packet` (
 -- 表的结构 `user_moments_look`
 --
 
+DROP TABLE IF EXISTS `user_moments_look`;
 CREATE TABLE `user_moments_look` (
   `id` int(11) UNSIGNED NOT NULL COMMENT '索引ID',
   `user_id` int(10) UNSIGNED NOT NULL COMMENT '用户ID',
@@ -409,6 +494,7 @@ CREATE TABLE `user_moments_look` (
 -- 表的结构 `user_msg`
 --
 
+DROP TABLE IF EXISTS `user_msg`;
 CREATE TABLE `user_msg` (
   `id` int(11) NOT NULL COMMENT '索引ID',
   `user_id` int(10) NOT NULL DEFAULT '0' COMMENT '用户ID(收消息)',
@@ -425,21 +511,19 @@ CREATE TABLE `user_msg` (
 -- 表的结构 `user_order`
 --
 
+DROP TABLE IF EXISTS `user_order`;
 CREATE TABLE `user_order` (
   `id` int(11) NOT NULL COMMENT '用户订单表',
   `user_id` int(11) NOT NULL COMMENT '用户id',
   `balance` decimal(10,2) NOT NULL COMMENT '当时余额',
-  `pay_channel` tinyint(1) NOT NULL COMMENT '支付渠道:1，支付宝；2，微信',
   `amount` decimal(10,2) NOT NULL COMMENT '订单金额',
   `status` int(1) NOT NULL DEFAULT '0' COMMENT '订单状态',
   `order_num` varchar(60) CHARACTER SET utf8 NOT NULL COMMENT '订单号',
-  `callback_data` text CHARACTER SET utf8 COMMENT '回调信息',
-  `consum_type` tinyint(1) NOT NULL COMMENT '交易类型 1,充值；2,提现,3:发朋友圈红包, 4: 发聊天红包,7:发悬赏',
-  `pay_account` varchar(25) DEFAULT NULL COMMENT '支付渠道账户',
+  `consum_type` tinyint(1) NOT NULL COMMENT '交易类型 1,充值；2,提现, 3: VIP',
   `fee` float(10,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '手续费, 默认为0',
   `remark` varchar(60) CHARACTER SET utf8 DEFAULT NULL COMMENT '备注',
-  `create_date` int(11) NOT NULL DEFAULT '0' COMMENT '创建时间',
-  `red_packet_gift_id` int(10) UNSIGNED DEFAULT '0' COMMENT '红包或礼物ID'
+  `create_time` int(11) UNSIGNED NOT NULL DEFAULT '0' COMMENT '创建时间',
+  `update_time` int(11) UNSIGNED NOT NULL DEFAULT '0' COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户订单表';
 
 -- --------------------------------------------------------
@@ -448,6 +532,7 @@ CREATE TABLE `user_order` (
 -- 表的结构 `user_relation_perm`
 --
 
+DROP TABLE IF EXISTS `user_relation_perm`;
 CREATE TABLE `user_relation_perm` (
   `id` int(11) UNSIGNED NOT NULL COMMENT '索引ID',
   `user_id` int(10) UNSIGNED NOT NULL COMMENT '用户ID',
@@ -462,6 +547,7 @@ CREATE TABLE `user_relation_perm` (
 -- 表的结构 `user_tag`
 --
 
+DROP TABLE IF EXISTS `user_tag`;
 CREATE TABLE `user_tag` (
   `id` int(11) UNSIGNED NOT NULL COMMENT '索引',
   `uid` int(11) NOT NULL DEFAULT '0' COMMENT '用户ID',
@@ -511,6 +597,14 @@ ALTER TABLE `files`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `friend`
+--
+ALTER TABLE `friend`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `friend_id` (`friend_id`);
+
+--
 -- Indexes for table `money_flow`
 --
 ALTER TABLE `money_flow`
@@ -520,6 +614,12 @@ ALTER TABLE `money_flow`
 -- Indexes for table `oss_fdel_queue`
 --
 ALTER TABLE `oss_fdel_queue`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `pay_order`
+--
+ALTER TABLE `pay_order`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -669,7 +769,13 @@ ALTER TABLE `exchange_ka_mi_record`
 -- 使用表AUTO_INCREMENT `files`
 --
 ALTER TABLE `files`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'id, 主键';
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'id, 主键', AUTO_INCREMENT=10;
+
+--
+-- 使用表AUTO_INCREMENT `friend`
+--
+ALTER TABLE `friend`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- 使用表AUTO_INCREMENT `money_flow`
@@ -682,6 +788,12 @@ ALTER TABLE `money_flow`
 --
 ALTER TABLE `oss_fdel_queue`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键, 索引ID';
+
+--
+-- 使用表AUTO_INCREMENT `pay_order`
+--
+ALTER TABLE `pay_order`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '用户订单表';
 
 --
 -- 使用表AUTO_INCREMENT `report`
@@ -747,7 +859,7 @@ ALTER TABLE `title`
 -- 使用表AUTO_INCREMENT `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- 使用表AUTO_INCREMENT `user_attr`
