@@ -13,6 +13,7 @@ include APP_DIR . '/lib/aliyun-oss-sdk-2.2.3.phar';
 
 use Fichat\Library\ApiProcessor;
 use Fichat\Library\PayProcessor;
+use Fichat\Library\RankProcessor;
 
 use Phalcon\Mvc\Micro;
 use Phalcon\Events\Manager as EventManager;
@@ -118,6 +119,15 @@ $app->post('/_API/_wxPayNotify', function () use ($di) {
 	return PayProcessor::wxPayNotify($di);
 });
 
+// 获取世界排行
+$app->post('/_API/_getWorldRank', function () use ($di) {
+	return RankProcessor::getWorldRank($di);
+});
+
+// 获取好友排行
+$app->post('/_API/_getFriendRank', function () use ($di) {
+	return RankProcessor::getFriendRank($di);
+});
 
 
 $app->notFound(function () use ($app) {
