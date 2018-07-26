@@ -192,7 +192,7 @@ class ApiProcessor {
 			$user = User::findFirst($uid);
 			
 			$data = [
-				'id' => $user,
+				'id' => $user->id,
 				'nickname' => $user->nickname,
 				'gender' => $user->gender,
 				'avatar' => $user->wx_avatar,
