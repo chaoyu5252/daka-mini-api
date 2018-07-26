@@ -7,6 +7,7 @@ use Fichat\Common\DBManager;
 use Fichat\Models\AssociationMember;
 use Fichat\Models\Feedback;
 use Fichat\Models\Files;
+use Fichat\Models\Friend;
 use Fichat\Models\OssFdelQueue;
 use Fichat\Models\RedPacket;
 use Fichat\Models\Report;
@@ -175,6 +176,28 @@ class ApiProcessor {
 			unset($data['watermark']);
 //			echo "execute success !!!";
 			// 事务提交
+			return Utils::commitTcReturn($di, $data, 'E0000');
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	/** 获取用户信息 */
+	public static function getUserInfo($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			
+			$user = User::findFirst($uid);
+			
+			$data = [
+				'id' => $user,
+				'nickname' => $user->nickname,
+				'gender' => $user->gender,
+				'avatar' => $user->wx_avatar,
+				'balance' => $user->balance
+			];
 			return Utils::commitTcReturn($di, $data, 'E0000');
 		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);
@@ -400,6 +423,7 @@ class ApiProcessor {
 	{
 		try {
 			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$redis = Utils::getService($di, SERVICE_REDIS);
 			$uid = $gd->uid;
 			
 			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
@@ -448,9 +472,15 @@ class ApiProcessor {
 			
 			// TODO 增加一条收入记录
 			$user -> balance += $getMoney;
+			$user -> task_income += $getMoney;
+			
+			// 推入收入到世界排行中
+			RedisManager::pushRank($redis, RedisClient::worldRankKey(), $user->id, $user->task_income);
+			
 			if (!$user ->save()) {
 				$transaction->rollback();
 			}
+			$redis->close();
 			// 事务提交
 			return Utils::commitTcReturn($di, $data, 'E0000');
 		} catch (Exception $e) {
@@ -498,13 +528,16 @@ class ApiProcessor {
 	{
 		// 分享人数
 		try {
+			$redis = Utils::getService($di, SERVICE_REDIS);
 			
-			$recordId = $_POST['record_id'] ? intval($_POST['record_id']) : 0;
+			$shareUid = $_POST['share_uid'] ? intval($_POST['share_uid']) : 0;
+			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
+			
 			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
 			
 			// 查询分享记录
 			$record = RewardTaskRecord::findFirst([
-				"conditions" => "id = ".$recordId,
+				"conditions" => "task_id = ".$taskId . ' AND op_type= 2 AND uid ='.$shareUid,
 				"for_update" => true
 			]);
 			if (!$record) {
@@ -545,10 +578,33 @@ class ApiProcessor {
 					]);
 					$user->setTransaction($transaction);
 					$user->balance += $task->share_price;
+					$user -> task_income += $getMoney;
+					
+					// 推入收入到世界排行中
+					RedisManager::pushRank($redis, RedisClient::worldRankKey(), $user->id, $user->task_income);
+					
 					if (!$user->save()) {
 						$transaction->rollback();
 					}
 				}
+			}
+			
+			// 保存好友关系, 我和分享人
+			$friend = new Friend();
+			$friend->setTransaction($transaction);
+			$friend->user_id = $uid;
+			$friend->friend_id = $shareUid;
+			if (!$friend->save()) {
+				$transaction->rollback();
+			}
+			
+			// 保存好友关系, 分享人和我
+			$friend = new Friend();
+			$friend->setTransaction($transaction);
+			$friend->user_id = $shareUid;
+			$friend->friend_id = $uid;
+			if (!$friend->save()) {
+				$transaction->rollback();
 			}
 			
 			// 保存
@@ -556,11 +612,12 @@ class ApiProcessor {
 				$transaction->rollback();
 			}
 			
+			// 返回数据
 			$data = [
 				'record_id' => $record->id,
 				'join_count' => $record->count
 			];
-			
+			$redis->close();
 			// 事务提交
 			return Utils::commitTcReturn($di, $data, 'E0000');
 		} catch (\Exception $e) {

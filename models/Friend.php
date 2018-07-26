@@ -4,24 +4,15 @@ namespace Fichat\Models;
 
 use Phalcon\Mvc\Model;
 
-class Friend extends Model {
+class Friend extends Base {
 	public $id;
 	public $user_id;
 	public $friend_id;
-	public $intimacy;
-	public $confirm;
-	public $disturb;
-	public $is_look;
-	public $forbid_look;
+	public $create_time;
+	public $update_time;
 	
 	public function initialize(){
-		$this->belongsTo('user_id', __NAMESPACE__ . '\User', 'id', array(
-				'alias' => 'user'
-		));
-		
-		$this->belongsTo('friend_id', __NAMESPACE__ . '\User', 'id', array(
-				'alias' => 'friend'
-		));
+		parent::initialize();
 	}
 
 }

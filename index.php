@@ -68,6 +68,11 @@ $app->post('/_API/_wxUpUserInfo', function() use ($di){
 	return ApiProcessor::wxInitUserInfo($di);
 });
 
+// 获取用户等级
+$app->post('/_API/_getUserInfo', function () use ($di) {
+	return ApiProcessor::getUserInfo($di);
+});
+
 $app->post('/_API/_upload', function() use ($di){
 	return ApiProcessor::uploadFile($di);
 });
@@ -108,7 +113,6 @@ $app->post('/_API/_publishTask', function() use ($di){
 $app->post('/_API/_wxPayOrder', function() use ($di){
 	return PayProcessor::wxPayOrder($di);
 });
-
 
 $app->post('/_API/_wxPayNotify', function () use ($di) {
 	return PayProcessor::wxPayNotify($di);

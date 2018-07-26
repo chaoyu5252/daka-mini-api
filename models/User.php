@@ -13,6 +13,7 @@ class User extends Model {
 	public $level = 1;
 	public $exp = 0;
 	public $balance = 0;
+	public $task_income = 0;
 	public $diamond = 0;
 	public $birthday = '1993-12-26';
 	public $email = '';

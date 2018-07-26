@@ -189,6 +189,11 @@ class RedisClient {
         return "userlevel_rank";
     }
     
+    public static function worldRankKey()
+    {
+        return "world_rank";
+    }
+    
     // 全服周粉丝
     public static function weekFansKey()
     {
