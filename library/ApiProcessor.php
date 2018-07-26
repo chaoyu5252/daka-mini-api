@@ -42,40 +42,6 @@ use Fichat\Utils\RedisClient;
 use Fichat\Utils\OssApi;
 use Fichat\Utils\Emoji;
 
-define('OSS_BUCKET_UAVATAR', 'uavatar');
-define('OSS_BUCKET_MOMENTS', 'moments');
-define('OSS_BUCKET_RTCOVER', 'rtcover');
-define('OSS_BUCKET_GAVATAR', 'gavatar');
-define('OSS_BUCKET_BG', 'background');
-define('OSS_BUCKET_PUBLIC', 'public');
-
-/** 上传业务类型 ======================================= */
-
-define('UPLOAD_BUSS_AVATAR', 1);
-define('UPLOAD_BUSS_MOMENT', 2);
-define('UPLOAD_BUSS_GROUP', 3);
-define('UPLOAD_BUSS_BG', 4);
-define('UPLOAD_BUSS_COMMON', 5);
-define('UPLOAD_BUSS_RTCOVER', 6);
-
-/** 支付类型 ========================================== */
-
-define('PAY_BY_ALI', 1);        // 支付宝
-define('PAY_BY_WX', 2);         // 微信
-define('PAY_BY_BL', 3);         // 余额
-define('PAY_BY_APPLE', 4);
-
-
-/** 家族成员操作权限 */
-define('FMPERM_UP_FAMILYAVATAR', 0);
-define('FMPERM_UP_FAMILYNAME', 1);
-define('FMPERM_UP_FAMILYINFO', 2);
-define('FMPERM_UP_FAMILYBULLTIN', 3);
-define('FMPERM_MG_FAMILYMEMBERS', 4);
-define('FMPERM_UP_FAMILYSHUTUP', 5);
-define('FMPERM_PUB_FAMILYTASK', 6);
-define('FMPERM_CONFIRM', 7);
-
 class ApiProcessor {
 
     /*
