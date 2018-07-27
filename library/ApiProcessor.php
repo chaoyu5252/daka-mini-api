@@ -66,7 +66,7 @@ class ApiProcessor {
 				$unionid = $verfiyRs['unionid'];
 			}
 			// 检查用户是否存在, 不存在创建新用户
-			$user = User::findFirst("openid = '".$openid."' OR unionid= '".$unionid."'");
+			$user = User::findFirst("openid = '".$openid."'");
 			$now = time();
 			$token = Utils::makeToken($openid);
 			$tokenSignTime = $now + TOKEN_KEEP;
