@@ -30,14 +30,13 @@ class RankProcessor {
 				foreach ($rankMembers as $memberId => $income) {
 					$income = $income ? floatval($income / 100) : 0;
 					foreach ($users as $user) {
-						if ($user->id = $memberId) {
+						if ($user->id == $memberId) {
 							$item = [
 								'nickname' => $user->nickname,
 								'avatar' => $user->wx_avatar,
 								'gender' => $user->gender,
 								'income' => $income
 							];
-							
 							array_push($data, $item);
 							break 1;
 						}
