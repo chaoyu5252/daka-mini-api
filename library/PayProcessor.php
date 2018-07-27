@@ -111,7 +111,7 @@ class PayProcessor {
 	            $total_fee      = $data['total_fee'];       // 付款金额
 	            
 	            /** TODO 支付成功结果处理 */
-	            $result = self::PaySuccess($out_trade_no, $itemId, $total_fee);
+	            $result = self::PaySuccess($di, $out_trade_no, $itemId, $total_fee);
             }else{
 	            $result = false;
             }
@@ -131,8 +131,9 @@ class PayProcessor {
 	}
 	
 	// 支付完成
-	private static function PaySuccess($out_trade_no, $itemId, $total_fee)
+	private static function PaySuccess($di, $out_trade_no, $itemId, $total_fee)
 	{
+		$transaction = Utils::getService($di, SERVICE_TRANSACTION);
 		//获取订单信息
 		$payOrder = UserOrder::findFirst([
 			"conditions" => "order_num = ".$out_trade_no
@@ -146,8 +147,10 @@ class PayProcessor {
 		}
 		
 		// 更新订单状态
+		$payOrder->setTransaction($transaction);
 		$payOrder->status = 1;
 		if(!$payOrder->save()) {
+			$transaction->rollback();
 			return false;
 		}
 		
@@ -156,23 +159,28 @@ class PayProcessor {
 			// 充值
 			$uid = $payOrder->user_id;
 			// 更新用户的余额
-			$user = User::findFirst("id = ".$uid);
+			$user = User::findFirst([
+				"conditions" => "id = ".$uid,
+				"for_update" => true
+			]);
 			if (!$user) {
 				return false;
 			}
+			$user->setTransaction($transaction);
 			// 保存用户数据
 			$newBalance = floatval($user->balance) + floatval($total_fee);
 			$user->balance = $newBalance;
 			if(!$user->save()) {
+				$transaction->rollback();
 				return false;
 			}
 		} else {
 			// VIP购买
 		}
+		$transaction->commit();
 		// 返回
 		return true;
 	}
-	
 	
 	//xml转换成数组
 	private static function xml2array($xml)
