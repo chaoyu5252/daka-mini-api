@@ -81,7 +81,7 @@ class PayProcessor {
 	// 回调函数
 	public static function wxPayNotify($di) {
 		try {
-			error_log("wxPayNotify");
+			echo "wxPayNotify";
 			// 获取微信支付回调数据
             $xml  = file_get_contents("php://input");
             error_log($xml);
@@ -89,13 +89,17 @@ class PayProcessor {
 	            exit();
             }
             $data = self::xml2array($xml);
-			error_log(json_encode($data));
+            var_dump($data);
+			//error_log(json_encode($data));
             //微信给的sign
             $wxSign = $data['sign'];
             unset($data['sign']);   //sign不参与签名算法
-
+			
+			$config = Utils::getService($di, SERVICE_CONFIG);
+//			$wxAppConfig = $config[CONFIG_KEY_WXMINI];
+			$wxPayConfig = $config[CONFIG_KEY_WXPAY];
             //自己生成sign
-            $key  = config('config_app.minapp_mch_key');
+            $key  = $wxPayConfig['mch_secret'];
             $mySign = self::MakeSign($data,$key);
 
             // 判断签名是否正确，判断支付状态

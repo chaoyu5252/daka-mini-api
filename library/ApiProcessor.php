@@ -266,7 +266,16 @@ class ApiProcessor {
 			
 			$taskList = [];
 			$now = time();
+			
 			if ($tasks) {
+				$taskIds = '';
+				foreach ($tasks as $task) {
+					$taskIds .= ','.$task->r->id;
+				}
+				$taskIds = substr($taskIds, 1);
+				$records = RewardTaskRecord::find([
+					'conditions' => 'uid='.$uid
+				]);
 				foreach ($tasks as $task) {
 					$item = $task->r->toArray();
 					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
@@ -275,6 +284,18 @@ class ApiProcessor {
 						$status = TASK_STATUS_END;
 					}
 					$item['status'] = $status;
+					
+					$isCliked = 0;
+					$shareCount = -1;
+					foreach ($records as $record) {
+						if ($record->op_type == TASK_OP_TYPE_CLICK) {
+							$isCliked = 1;
+						} else if ($record->op_type == TASK_OP_TYPE_SHARE) {
+							$shareCount = count(json_decode($record->join_members));
+						}
+					}
+					$item['clicked'] = $isCliked;
+					$item['my_share_join_count'] = $shareCount;
 					array_push($taskList, $item);
 				}
 			}
