@@ -283,6 +283,16 @@ class ApiProcessor {
 		}
 	}
 	
+	// 获取任务服务费
+	public static function getTaskFee($di)
+	{
+		try {
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['fee'=>2]);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
 	// 拉取我发布的任务
 	public static function loadMyJoinTaskList($di)
 	{

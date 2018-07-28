@@ -120,6 +120,11 @@ $app->post('/_API/_isJoinedTask', function() use ($di){
 	return ApiProcessor::isJoinedTask($di);
 });
 
+// 获取任务手续费
+$app->post('/_API/_getTaskFee', function () {
+	return ApiProcessor::getTaskFee($di);
+});
+
 // 支付相关
 $app->post('/_API/_wxPayOrder', function() use ($di){
 	return PayProcessor::wxPayOrder($di);
