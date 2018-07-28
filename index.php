@@ -110,6 +110,16 @@ $app->post('/_API/_publishTask', function() use ($di){
 	return ApiProcessor::publishTask($di);
 });
 
+// 获取分享任务需要的人数
+$app->post('/_API/_shareNeedsJoinCount', function() use ($di){
+	return ApiProcessor::getShareJoinCount($di);
+});
+
+// 检查是否已经加入了该任务
+$app->post('/_API/_isJoinedTask', function() use ($di){
+	return ApiProcessor::isJoinedTask($di);
+});
+
 // 支付相关
 $app->post('/_API/_wxPayOrder', function() use ($di){
 	return PayProcessor::wxPayOrder($di);

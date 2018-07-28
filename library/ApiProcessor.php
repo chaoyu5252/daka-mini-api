@@ -192,6 +192,8 @@ class ApiProcessor {
 	public static function loadTaskList($di)
 	{
 		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
 			$page = $_POST['page'] ? intval($_POST['page']) : 1;
 			
 			$startIdx = ($page - 1) * PAGE_SIZE;
@@ -203,9 +205,34 @@ class ApiProcessor {
 			$tasks = $query->execute();
 			$taskList = [];
 			if ($tasks) {
+				$taskIds = '';
+				foreach ($tasks as $task) {
+					$taskIds .= ','.$task->r->id;
+				}
+				$taskIds = substr($taskIds, 1);
+				$records = RewardTaskRecord::find([
+					'conditions' => 'task_id in('.$taskIds.') AND uid='.$uid
+				]);
+				
 				foreach ($tasks as $task) {
 					$item = $task->r->toArray();
 					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
+					
+					$isCliked = 0;
+					$shareCount = -1;
+					$isShared = 0;
+					foreach ($records as $record) {
+						if ($record->op_type == TASK_OP_TYPE_CLICK) {
+							$isCliked = 1;
+						} else if ($record->op_type == TASK_OP_TYPE_SHARE) {
+							$isShared = 1;
+							$shareCount = count(json_decode($record->join_members));
+						}
+					}
+					$item['shared'] = $isShared;
+					$item['clicked'] = $isCliked;
+					$item['my_share_join_count'] = $shareCount;
+					
 					array_push($taskList, $item);
 				}
 			}
@@ -274,7 +301,7 @@ class ApiProcessor {
 				}
 				$taskIds = substr($taskIds, 1);
 				$records = RewardTaskRecord::find([
-					'conditions' => 'uid='.$uid
+					'conditions' => 'uid='.$uid.' AND task_id in ('.$taskIds.')'
 				]);
 				foreach ($tasks as $task) {
 					$item = $task->r->toArray();
@@ -286,16 +313,19 @@ class ApiProcessor {
 					$item['status'] = $status;
 					
 					$isCliked = 0;
+					$isShared = 0;
 					$shareCount = -1;
 					foreach ($records as $record) {
 						if ($record->op_type == TASK_OP_TYPE_CLICK) {
 							$isCliked = 1;
 						} else if ($record->op_type == TASK_OP_TYPE_SHARE) {
+							$isShared = 1;
 							$shareCount = count(json_decode($record->join_members));
 						}
 					}
 					$item['clicked'] = $isCliked;
 					$item['my_share_join_count'] = $shareCount;
+					$item['shared'] = $isShared;
 					array_push($taskList, $item);
 				}
 			}
@@ -372,6 +402,61 @@ class ApiProcessor {
 			return Utils::commitTcReturn($di, $data, 'E0000');
 		} catch (\Exception $e) {
 			var_dump($e);
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	public static function getShareJoinCount($di)
+	{
+		try {
+			$data = [
+				'share_needs_count' => [
+					'10' => 2.5,
+					'20' => 6,
+					'30' => 9,
+					'40' => 15,
+					'50' => 25,
+				]
+			];
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, $data);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	public static function isJoinedTask($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			
+			$shareUid = $_POST['share_uid'] ? intval($_POST['share_uid']) : 0;
+			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
+			
+			// 查询分享记录
+			$record = RewardTaskRecord::findFirst([
+				"conditions" => "task_id = ".$taskId . ' AND op_type= 2 AND uid ='.$shareUid,
+				"for_update" => true
+			]);
+			if (!$record) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_RECORD_NO_EXIST);
+			}
+			
+			// 查询任务
+			$task = RewardTask::findFirst([
+				"conditions" => "id = ".$record->task_id,
+				"for_update" => true
+			]);
+			
+			// 加入用户数
+			$joinMembers = json_decode($record->join_members);
+			$joined = 0;
+			if (in_array($uid, $joinMembers)) {
+				$joined = 1;
+			}
+			// 返回数据
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['joined_task' => $joined]);
+		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);
 		}
 	}
