@@ -213,10 +213,16 @@ class ApiProcessor {
 				$records = RewardTaskRecord::find([
 					'conditions' => 'task_id in('.$taskIds.') AND uid='.$uid
 				]);
-				
+				$now = time();
 				foreach ($tasks as $task) {
 					$item = $task->r->toArray();
 					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
+					
+					$status = $item['status'];
+					if ($now >= $item['end_time']) {
+						$status = TASK_STATUS_END;
+					}
+					$item['status'] = $status;
 					
 					$isCliked = 0;
 					$shareCount = -1;
@@ -232,6 +238,9 @@ class ApiProcessor {
 					$item['shared'] = $isShared;
 					$item['clicked'] = $isCliked;
 					$item['my_share_join_count'] = $shareCount;
+					
+					
+					
 					
 					array_push($taskList, $item);
 				}
@@ -321,6 +330,7 @@ class ApiProcessor {
 						} else if ($record->op_type == TASK_OP_TYPE_SHARE) {
 							$isShared = 1;
 							$shareCount = count(json_decode($record->join_members));
+							
 						}
 					}
 					$item['clicked'] = $isCliked;
@@ -429,33 +439,50 @@ class ApiProcessor {
 		try {
 			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
 			$uid = $gd->uid;
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
 			
 			$shareUid = $_POST['share_uid'] ? intval($_POST['share_uid']) : 0;
 			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
-			
+			$joined = 0;
 			// 查询分享记录
 			$record = RewardTaskRecord::findFirst([
 				"conditions" => "task_id = ".$taskId . ' AND op_type= 2 AND uid ='.$shareUid,
 				"for_update" => true
 			]);
 			if (!$record) {
-				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_RECORD_NO_EXIST);
+				return Utils::commitTcReturn($di, ['joined_task' => $joined]);
 			}
-			
-			// 查询任务
-			$task = RewardTask::findFirst([
-				"conditions" => "id = ".$record->task_id,
-				"for_update" => true
-			]);
 			
 			// 加入用户数
 			$joinMembers = json_decode($record->join_members);
-			$joined = 0;
 			if (in_array($uid, $joinMembers)) {
 				$joined = 1;
 			}
+			
+			$now = time();
+			
+			$user = User::findFirst([
+				"conditions" => "id = ".$uid,
+				"for_update" => true
+			]);
+			$user->setTransaction($transaction);
+			
+			// 获取今天开始的时间
+			if ($todayShareJoinSignTIme != $user->share_join_sign_time) {
+				$user->share_join_sign_time = $todayShareJoinSignTIme;
+				$user->share_join_count = 0;
+			}
+			
+			if (!$user->save()) {
+				$transaction->rollback();
+			}
+			
+			if ($user->share_join_count == 5) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_HELP_LIMIT);
+			}
+			
 			// 返回数据
-			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['joined_task' => $joined]);
+			return Utils::commitTcReturn($di, ['joined_task' => $joined]);
 		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);
 		}
@@ -512,6 +539,11 @@ class ApiProcessor {
 			// 检查用户是否已经点击过
 			if (RewardTaskRecord::findFirst([ "conditions" => "task_id=".$taskId." AND op_type = ".TASK_OP_TYPE_CLICK." AND uid = ".$uid])) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS);
+			}
+			
+			// 检查用户是否已经超过了每日参与任务的最大数量
+			if (!DBManager::checkDayTaskTimes($uid)) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_LIMIT);
 			}
 			
 			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
@@ -589,6 +621,11 @@ class ApiProcessor {
 			// 检查任务是否存在
 			if (!$task) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
+			}
+			
+			// 检查用户是否已经超过了每日参与任务的最大数量
+			if (!DBManager::checkDayTaskTimes($uid)) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_LIMIT);
 			}
 			
 			// 检查用户是否已经点击过
@@ -684,6 +721,15 @@ class ApiProcessor {
 					$user->setTransaction($transaction);
 					$user->balance += $task->share_price;
 					$user -> task_income += $getMoney;
+					
+					$now = time();
+					$todayShareJoinSignTIme = $now - ($now / 86400);
+					
+					if ($todayShareJoinSignTIme != $user->share_join_sign_time) {
+						$user->share_join_sign_time = $todayShareJoinSignTIme;
+						$user->share_join_count = 0;
+					}
+					$user->share_join_count += 1;
 					
 					// 推入收入到世界排行中
 					RedisManager::pushRank($redis, RedisClient::worldRankKey(), $user->id, $user->task_income * 100);

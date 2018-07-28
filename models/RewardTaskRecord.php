@@ -7,7 +7,7 @@ use Fichat\Utils\RedisClient;
 use Phalcon\Di;
 use Phalcon\Mvc\Model;
 
-class RewardTaskRecord extends Model
+class RewardTaskRecord extends Base
 {
 	public $id;
 	public $task_id;
@@ -15,9 +15,12 @@ class RewardTaskRecord extends Model
 	public $join_members = '';
 	public $uid;
 	public $status;
-	public $op_time;
+	public $create_time;
+	public $update_time;
 	
 	public function initialize() {
+		parent::initialize();
+		
 		$this->belongsTo('uid', __NAMESPACE__ . '\User', 'id', array(
 			'alias' => 'user'
 		));

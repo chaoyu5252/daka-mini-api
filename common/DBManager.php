@@ -72,7 +72,22 @@ use Phalcon\Mvc\Model\Transaction\Failed as TcFailed;
 
 
 class DBManager {
-
+	
+	// 检查当日任务数量
+	public static function checkDayTaskTimes($uid)
+	{
+		$now = time();
+		$dayBeginTime = $now - ($now % 86400);
+		$dayEndTime = $dayBeginTime + 86400;
+		$count = RewardTaskRecord::count([
+			"conditions" => "uid = ".$uid." AND create_time >= ".$dayBeginTime." AND create_time <=".$dayEndTime
+		]);
+		if ($count == 5) {
+			return false;
+		}
+		return true;
+	}
+	
 	// accountId获取用户信息
 	public static function getUserByAccountId($accountId) {
 		return User::findFirst("account_id = $accountId");
