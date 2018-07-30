@@ -107,6 +107,10 @@ class DBManager {
 			return ReturnMessageManager::buildReturnMessage(ERROR_MONEY);
 		}
 		
+		// 检查手续费
+		$fee = $_POST['fee'] ? $_POST['fee'] : 0;
+		$needMoney = $needMoney - $fee;
+		
 		// 点击单价
 		$clickPrice = $_POST['click_price'] ? $_POST['click_price'] : 0;
 		if ($clickPrice < 0.01) {
@@ -169,8 +173,6 @@ class DBManager {
 			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_CLICK_AND_SHARE_SUM_MORE);
 		}
 		
-		
-		// echo 'taskCoverFid:'. $_POST['task_cover'] ? intval($_POST['task_cover']) : 0;
 		// 返回任务信息
 		return [
 			'click_price' => $clickPrice,
