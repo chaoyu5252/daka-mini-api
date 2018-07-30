@@ -162,7 +162,7 @@ class DBManager {
 		}
 		
 		// 检查分享奖励金额
-		$sharePrice = $_POST['share_price'] ? intval($_POST['share_price']) : 0;
+		$sharePrice = $_POST['share_price'] ? floatval($_POST['share_price']) : 0;
 		if ($sharePrice < $minSharePrice) {
 			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_SHARE_PRICE);
 		}
