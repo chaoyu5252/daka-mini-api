@@ -391,6 +391,7 @@ class ApiProcessor {
 			}
 			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_list' => $taskList]);
 		} catch (\Exception $e) {
+			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
