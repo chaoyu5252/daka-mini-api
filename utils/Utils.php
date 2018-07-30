@@ -61,6 +61,29 @@ class Utils
 		}
 	}
 	
+	// 发送post消息
+	public static function http_post($url, $data){
+		$oCurl = curl_init();
+		if(stripos($url,"https://")!==FALSE){
+			curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
+			curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
+			curl_setopt($oCurl, CURLOPT_SSLVERSION, 1); //CURL_SSLVERSION_TLSv1
+		}
+		curl_setopt($oCurl, CURLOPT_PORT, 1);
+		curl_setopt($oCurl, CURLOPT_URL, $url);//目标URL
+		curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );//设定是否显示头信息,1为显示
+		curl_setopt($oCurl, CURLOPT_BINARYTRANSFER, true) ;//在启用CURLOPT_RETURNTRANSFER时候将获取数据返回
+		curl_setopt($oCurl, CURLOPT_POSTFIELDS, $data);
+		$sContent = curl_exec($oCurl);
+		$aStatus = curl_getinfo($oCurl);//获取页面各种信息
+		curl_close($oCurl);
+		if(intval($aStatus["http_code"])==200){
+			return $sContent;
+		}else{
+			return false;
+		}
+	}
+	
 	// 生成UUID
 	public static function guid()
 	{

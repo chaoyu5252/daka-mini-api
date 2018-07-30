@@ -20,6 +20,8 @@ class RewardTask extends Model
 	public $click_count = 0;
 	public $share_count = 0;
 	public $share_join_count = 0;
+	public $effect_click_count = 0;
+	public $effect_share_count = 0;
 	public $total_click_count = 0;
 	public $total_share_count = 0;
 	public $status = 1;

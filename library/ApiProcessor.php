@@ -148,6 +148,46 @@ class ApiProcessor {
 		}
 	}
 	
+	/** 推送微信支付客服消息 */
+	public static function pushWxClientPayMsg($di)
+	{
+		try {
+			$config = Utils::getService($di, SERVICE_CONFIG)->toArray();
+			$wxConfig = $config[CONFIG_KEY_WXMINI];
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			// 用户数据
+			$user = User::findFirst("id = ".$uid);
+			
+			$authUrl = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid='.$wxConfig['app_id'].'&secret='.$wxConfig['app_key'];
+			$authRs = json_decode(Utils::http_get($authUrl), true);
+			// 检查是否抛错
+			if (array_key_exists('errcode', $authRs))
+			{
+				return ReturnMessageManager::buildReturnMessage(ERROR_WX_AUTH);
+			}
+			
+			$accessToken = $authRs['access_token'];
+			// 发送消息
+			$msgUrl = 'https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token='.$accessToken;
+			$msgData = [
+				'touser' => $user->openid,
+				'msgtype' => 'text',
+				'text' => [
+					'content' => 'www.baidu.com'
+				]
+			];
+			echo $msgUrl;
+			$msgRs =  json_decode(Utils::http_post($msgUrl, $msgData), true);
+			var_dump($msgRs);
+//			json_decode(Utils::)
+			
+			
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
 	/** 获取用户信息 */
 	public static function getUserInfo($di)
 	{
@@ -566,12 +606,23 @@ class ApiProcessor {
 			// 设置事物
 			$task->setTransaction($transaction);
 			
+			// 自己点击自己不做任何处理
+			if ($task->owner_id == $uid) {
+				$task->total_click_count += 1;
+				if (!$task->save()) {
+					$transaction->rollback();
+				}
+				// 返回结果
+				Return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, []);
+			}
+			
 			$data = [];
 			if ($task->status == TASK_STATUS_DONE) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_FINISHED);
 			}
 			$getMoney = floatval($task->click_price);
 			$balance = floatval($task->balance);
+			
 			$task->total_click_count += 1;
 			$taskBalance = $balance - $getMoney;
 			$taskStatus = $task->status;
@@ -633,6 +684,16 @@ class ApiProcessor {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
 			}
 			
+			// 自己点击自己不做任何处理
+			if ($task->owner_id == $uid) {
+				$task->total_share_count += 1;
+				if (!$task->save()) {
+					$transaction->rollback();
+				}
+				// 返回结果
+				Return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, []);
+			}
+			
 			// 检查用户是否已经超过了每日参与任务的最大数量
 			if (!DBManager::checkDayTaskTimes($uid)) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_LIMIT);
@@ -656,6 +717,48 @@ class ApiProcessor {
 			}
 			// 事务提交
 			return Utils::commitTcReturn($di, ['record_id' => $taskRecord->id], 'E0000');
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	public static function getTaskDeail($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			
+			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
+			$task = RewardTask::findFirst([
+				"conditions" => "id = ".$taskId
+			]);
+			
+			// 检查任务是否存在
+			if (!$task) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
+			}
+			
+			// 获取任务记录
+			$phpl = 'SELECT rr.*, u.avatar, u.nickname FROM Fichat\Models\RewardTaskRecord as rr '
+					.'LEFT JOIN Fichat\Models\User as u ON rr.uid = u.id'
+					.'WHERE rr.task_id = '.$taskId;
+			$query = new Query($phpl, $di);
+			$records = $query->execute();
+			$rList = [];
+			if ($records) {
+				// 检查
+				foreach ($records as $record) {
+					$item = [
+						'uid' => $record->rr->uid,
+						'op_type' => $record->rr->op_type,
+						'avatar' => $record->wx_avatar,
+						'nickname' => $record->nickname,
+						'gender' > $record->gender
+					];
+					array_push($rList, $item);
+				}
+			}
+			// 返回任务记录
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_records' => $rList]);
 		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);
 		}
@@ -812,7 +915,6 @@ class ApiProcessor {
 			// 事务提交
 			return Utils::commitTcReturn($di, $data, 'E0000');
 		} catch (\Exception $e) {
-			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
