@@ -783,6 +783,7 @@ class ApiProcessor {
 					$item['avatar'] = $record->wx_avatar;
 					$item['nickname'] = $record->nickname;
 					$item['gender'] = $record->gender;
+					array_push($rList, $item);
 				}
 			}
 			// 返回任务记录
