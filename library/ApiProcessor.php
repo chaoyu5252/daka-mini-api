@@ -745,8 +745,8 @@ class ApiProcessor {
 			}
 			
 			// 获取任务记录
-			$phpl = 'SELECT rr.*, u.avatar, u.nickname FROM Fichat\Models\RewardTaskRecord as rr '
-					.'LEFT JOIN Fichat\Models\User as u ON rr.uid = u.id'
+			$phpl = 'SELECT rr.*, u.wx_avatar, u.nickname, u.gender FROM Fichat\Models\RewardTaskRecord as rr '
+					.'LEFT JOIN Fichat\Models\User as u ON rr.uid = u.id '
 					.'WHERE rr.task_id = '.$taskId;
 			$query = new Query($phpl, $di);
 			$records = $query->execute();
@@ -754,19 +754,38 @@ class ApiProcessor {
 			if ($records) {
 				// 检查
 				foreach ($records as $record) {
-					$item = [
-						'uid' => $record->rr->uid,
-						'op_type' => $record->rr->op_type,
-						'avatar' => $record->wx_avatar,
-						'nickname' => $record->nickname,
-						'gender' > $record->gender
-					];
-					array_push($rList, $item);
+					$tmpUid = $record->rr->uid;
+					if (array_key_exists($tmpUid, $rList)) {
+						$item = $rList[$tmpUid];
+					} else {
+						$item = [
+							'avatar' => $record->wx_avatar,
+							'nickname' => $record->nickname,
+							'gender' => $record->gender,
+							'op_click' => 0,
+							'op_share' => 0
+						];
+					}
+					// 检查
+					if ($record->rr->op_type == TASK_OP_TYPE_CLICK) {
+						$item['op_click'] = 1;
+					} else if ($record->rr->op_type == TASK_OP_TYPE_SHARE) {
+						// 分享
+						$count = count(json_decode($record->rr->join_members), true);
+						if ($count == $task->share_join_count) {
+							$item['op_share'] = 1;
+						}
+					}
+					// 检查是否插入
+					if ($item['op_click'] == 1 || $item['op_share'] == 1) {
+						$rList[$tmpUid] = $item;
+					}
 				}
 			}
 			// 返回任务记录
 			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_records' => $rList]);
 		} catch (\Exception $e) {
+			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}

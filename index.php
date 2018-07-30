@@ -130,6 +130,11 @@ $app->post('/_API/_getTaskFee', function () {
 	return ApiProcessor::getTaskFee($di);
 });
 
+// 获取任务详情
+$app->post('/_API/_getTaskDeail', function () use ($di) {
+	return ApiProcessor::getTaskDeail($di);
+});
+
 // 支付相关
 $app->post('/_API/_wxPayOrder', function() use ($di){
 	return PayProcessor::wxPayOrder($di);
