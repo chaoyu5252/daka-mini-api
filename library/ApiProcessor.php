@@ -358,10 +358,13 @@ class ApiProcessor {
 				foreach ($tasks as $task) {
 					$taskIds .= ','.$task->r->id;
 				}
-				$taskIds = substr($taskIds, 1);
-				$records = RewardTaskRecord::find([
-					'conditions' => 'uid='.$uid.' AND task_id in ('.$taskIds.')'
-				]);
+				$records = [];
+				if ($taskIds) {
+					$taskIds = substr($taskIds, 1);
+					$records = RewardTaskRecord::find([
+						'conditions' => 'uid='.$uid.' AND task_id in ('.$taskIds.')'
+					]);
+				}
 				foreach ($tasks as $task) {
 					$item = $task->r->toArray();
 					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
