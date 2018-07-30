@@ -182,8 +182,33 @@ class ApiProcessor {
 			var_dump($msgRs);
 //			json_decode(Utils::)
 			
-			
 		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	/** 获取用户的 */
+	public static function getUserInfoByUnionId($di)
+	{
+		try {
+			$unionId = $_POST['union_id'] ? trim($_POST['union_id']) : false;
+			if (!$unionId) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_NO_USER);
+			}
+			$user = User::findFirst([
+				"conditions" => " unionid='".$unionId."' "
+			]);
+			if (!$user) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_NO_USER);
+			}
+			$data = [
+				'uid' => $user->id,
+				'nickname' => $user->nickname,
+				'wx_avatar' => $user->wx_avatar
+			];
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['info'=>$data]);
+		} catch (\Exception $e) {
+			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
@@ -754,32 +779,10 @@ class ApiProcessor {
 			if ($records) {
 				// 检查
 				foreach ($records as $record) {
-					$tmpUid = $record->rr->uid;
-					if (array_key_exists($tmpUid, $rList)) {
-						$item = $rList[$tmpUid];
-					} else {
-						$item = [
-							'avatar' => $record->wx_avatar,
-							'nickname' => $record->nickname,
-							'gender' => $record->gender,
-							'op_click' => 0,
-							'op_share' => 0
-						];
-					}
-					// 检查
-					if ($record->rr->op_type == TASK_OP_TYPE_CLICK) {
-						$item['op_click'] = 1;
-					} else if ($record->rr->op_type == TASK_OP_TYPE_SHARE) {
-						// 分享
-						$count = count(json_decode($record->rr->join_members), true);
-						if ($count == $task->share_join_count) {
-							$item['op_share'] = 1;
-						}
-					}
-					// 检查是否插入
-					if ($item['op_click'] == 1 || $item['op_share'] == 1) {
-						$rList[$tmpUid] = $item;
-					}
+					$item = $record->rr->toArray();
+					$item['avatar'] = $record->wx_avatar;
+					$item['nickname'] = $record->nickname;
+					$item['gender'] = $record->gender;
 				}
 			}
 			// 返回任务记录

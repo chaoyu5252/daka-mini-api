@@ -74,6 +74,11 @@ $app->post('/_API/_pushWxClientMsg', function () use ($di){
 	return ApiProcessor::pushWxClientPayMsg($di);
 });
 
+//
+$app->post('/_API/_getUserInfoByUnionID', function () use ($di) {
+	return ApiProcessor::getUserInfoByUnionId($di);
+});
+
 // 获取用户等级
 $app->post('/_API/_getUserInfo', function () use ($di) {
 	return ApiProcessor::getUserInfo($di);

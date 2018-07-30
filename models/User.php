@@ -6,6 +6,8 @@ use Phalcon\Mvc\Model;
 
 class User extends Model {
 	public $id;
+	public $unionid = '';
+	public $openid = '';
 	public $phone = '';
 	public $nickname = '';
 	public $gender = 1;

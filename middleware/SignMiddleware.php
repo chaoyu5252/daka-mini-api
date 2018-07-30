@@ -20,6 +20,7 @@ class SignMiddleware implements MiddlewareInterface
     ];
 
     private $no_sign_proto = [
+    	'/_API/_getUserInfoByUnionID',  // 根据unionid获取用户信息
         '/_API/_signup',            // 注册账号
         '/_API/_login',             // 账号登录
         '/_API/_wxLogin',           // 微信登录
