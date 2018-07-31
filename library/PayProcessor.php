@@ -65,6 +65,38 @@ class PayProcessor {
 		}
 	}
 	
+	/**
+	 * 获取余额流水
+	 *
+	 */
+	public static function loadBalanceFlow($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			
+			// 获取流水
+			$bfs = BalanceFlow::find([
+				"conditions" => "uid = ".$uid
+			]);
+			
+			$balanceFlows = [];
+			if ($bfs) {
+				foreach ($bfs as $bf) {
+					$item = [
+						'op_type' => $bf->op_type,
+						'op_amount' => $bf->op_amount,
+						'create_time' => $bf->create_time
+					];
+					array_push($balanceFlows, $item);
+				}
+			}
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['balance_flow' => $balanceFlows]);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
     /*
      *  TODO 微信下单接口
      */
