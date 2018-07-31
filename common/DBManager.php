@@ -110,7 +110,7 @@ class DBManager {
 		}
 		
 		// 检查手续费
-		$fee = $_POST['fee'] ? $_POST['fee'] : 0;
+		$fee = $_POST['fee'] ? floatval($_POST['fee']) : 0;
 		$needMoney = $needMoney - $fee;
 		
 		// 点击单价
@@ -184,7 +184,8 @@ class DBManager {
 			'share_price' => $sharePrice,
 			'task_money' => $needMoney,
 			'task_desp' => trim($_POST['content']),
-			'task_cover' => $_POST['task_cover'] ? intval($_POST['task_cover']) : 0
+			'task_cover' => $_POST['task_cover'] ? intval($_POST['task_cover']) : 0,
+			'order_amount' => $needMoney + $fee
 		];
 	}
 	

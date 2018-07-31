@@ -454,6 +454,7 @@ class ApiProcessor {
 			$taskAmount = $checkParamRs['task_money'];
 			$taskDesp = $checkParamRs['task_desp'];
 			$taskCoverFid = $checkParamRs['task_cover'];
+			$orderAmount = $checkParamRs['order_amount'];
 
 //			var_dump($_POST);
 			
@@ -482,7 +483,7 @@ class ApiProcessor {
 			}
 			
 			// 更新用户的balance
-			$leftbalance = $user->balance - $task->task_amount;
+			$leftbalance = $user->balance - $orderAmount;
 			$user->balance = $leftbalance;
 			if (!$user->save()) {
 				$transaction->rollback();
@@ -492,7 +493,7 @@ class ApiProcessor {
 			$bf = new BalanceFlow();
 			$bf->op_type = BALANCE_FLOW_PUBTASK;
 			$bf->target_id = $task->id;
-			$bf->op_amount = $task->task_amount;
+			$bf->op_amount = $orderAmount;
 			$bf->user_order_id = 0;
 			$bf->uid = $uid;
 			$bf->create_time = time();
