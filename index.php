@@ -149,6 +149,10 @@ $app->post('/_API/_wxPayNotify', function () use ($di) {
 	return PayProcessor::wxPayNotify($di);
 });
 
+$app->post('/_API/_loadBalanceFlow', function () use ($di) {
+	return PayProcessor::loadBalanceFlow($di);
+});
+
 // 获取世界排行
 $app->post('/_API/_getWorldRank', function () use ($di) {
 	return RankProcessor::getWorldRank($di);
