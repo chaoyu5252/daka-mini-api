@@ -27,7 +27,7 @@ class PayProcessor {
 			$data = [];
 			
 			$user = User::findFirst([
-				"conditions" => ""
+				"conditions" => "unionid='".$unionid."'"
 			]);
 			// 用户不存在
 			if (!$user) {
