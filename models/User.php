@@ -21,6 +21,7 @@ class User extends Model {
 	public $email = '';
 	public $name = '';
 	public $session_key = '';
+//	public $access_token = '';
 	public $token = '';
 	public $token_sign_time = 0;
 	public $share_join_count = 0;

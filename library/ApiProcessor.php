@@ -80,11 +80,18 @@ class ApiProcessor {
 				$user->create_time = $now;
 			}
 			
+			// 拉取授权
+//			$accessToken = Utils::getAcessToken($di);
+//			if (!$accessToken) {
+//				return ReturnMessageManager::buildReturnMessage(ERROR_LOGIN_VERIFY);
+//			}
+			
 //			var_dump($verfiyRs);
 			$user->setTransaction($transaction);
 			$user->session_key = $sessionKey;
 			$user->openid = $openid;
 			$user->unionid = $unionid;
+//			$user->access_token = $accessToken;
 			$user->token = $token;
 			$user->token_sign_time = $tokenSignTime;
 			$user->update_time = $now;

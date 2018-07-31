@@ -40,6 +40,78 @@ class Utils
 		}
 	}
 	
+	// 内容检查
+	public static function checkMsg($di, $content)
+	{
+		$accessToken = self::getAcessToken($di);
+		$url = "https://api.weixin.qq.com/wxa/msg_sec_check?access_token=".$accessToken;
+		
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		
+		$data = json_encode(array('content' => $content));
+		curl_setopt($ch, CURLOPT_HEADEROPT, [
+			'Content-Type' => 'application/json'
+		]);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$checkRs = json_decode(curl_exec($ch), true);
+		curl_close($ch);
+		var_dump($checkRs);
+		if ($checkRs['errcode'] == 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static function checkImg($di, $key)
+	{
+		if (!$_FILES) {
+			return true;
+		}
+		$tmpName = $_FILES[$key]['tmp_name'];
+		if (!$tmpName) {
+			return true;
+		}
+		
+		$accessToken = self::getAcessToken($di);
+		$url = "https://api.weixin.qq.com/wxa/img_sec_check?access_token=".$accessToken;
+		
+		$ch = curl_init();
+		curl_setopt ( $ch, CURLOPT_SAFE_UPLOAD, false);
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		
+		if (class_exists('\CURLFile')) {
+			$data['media'] = new \CURLFile(realpath($tmpName));
+		} else {
+			$data['media'] = '@'.realpath($tmpName);
+		}
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$uploadRs = json_decode(curl_exec($ch), true);
+		curl_close($ch);
+		if ($uploadRs['errcode'] == 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	// 获取access_token
+	public static function getAcessToken($di)
+	{
+		$config = self::getService($di, SERVICE_CONFIG) ->toArray();
+		$wxConfig = $config[CONFIG_KEY_WXMINI];
+		$url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".$wxConfig['app_id']."&secret=".$wxConfig['app_key'];
+		$rs = json_decode(self::http_get($url), true);
+		if (array_key_exists('errcode', $rs)) {
+			return false;
+		}
+		var_dump($rs);
+		return $rs['access_token'];
+	}
+	
 	// 发送http
 	public static function http_get($url){
 		$oCurl = curl_init();
@@ -69,12 +141,17 @@ class Utils
 			curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, FALSE);
 			curl_setopt($oCurl, CURLOPT_SSLVERSION, 1); //CURL_SSLVERSION_TLSv1
 		}
+		curl_setopt($oCurl, CURLOPT_HEADER, 0);
+		curl_setopt($oCurl, CURLOPT_TIMEOUT, 60);
 		curl_setopt($oCurl, CURLOPT_PORT, 1);
 		curl_setopt($oCurl, CURLOPT_URL, $url);//目标URL
 		curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1 );//设定是否显示头信息,1为显示
 		curl_setopt($oCurl, CURLOPT_BINARYTRANSFER, true) ;//在启用CURLOPT_RETURNTRANSFER时候将获取数据返回
 		curl_setopt($oCurl, CURLOPT_POSTFIELDS, $data);
 		$sContent = curl_exec($oCurl);
+		var_dump($sContent);
+		
+		var_dump(curl_error($oCurl));
 		$aStatus = curl_getinfo($oCurl);//获取页面各种信息
 		curl_close($oCurl);
 		if(intval($aStatus["http_code"])==200){

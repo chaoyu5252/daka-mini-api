@@ -131,7 +131,7 @@ $app->post('/_API/_isJoinedTask', function() use ($di){
 });
 
 // 获取任务手续费
-$app->post('/_API/_getTaskFee', function () {
+$app->post('/_API/_getTaskFee', function () use ($di) {
 	return ApiProcessor::getTaskFee($di);
 });
 
@@ -149,6 +149,10 @@ $app->post('/_API/_wxPayNotify', function () use ($di) {
 	return PayProcessor::wxPayNotify($di);
 });
 
+$app->post('/_API/_publicNoPaySucc', function () use ($di) {
+	return PayProcessor::publicNoPaySucc($di);
+});
+
 $app->post('/_API/_loadBalanceFlow', function () use ($di) {
 	return PayProcessor::loadBalanceFlow($di);
 });
@@ -163,6 +167,17 @@ $app->post('/_API/_getFriendRank', function () use ($di) {
 	return RankProcessor::getFriendRank($di);
 });
 
+$app->get('/_API/_test', function () use ($di) {
+	return Utils\Utils::getAcessToken($di);
+});
+
+$app->post('/_API/_test', function () use ($di) {
+	try {
+		return Utils\Utils::checkMsg($di, '完2347全dfji试3726测asad感3847知qwez到');
+	} catch (\Exception $e) {
+		var_dump($e);
+	}
+});
 
 $app->notFound(function () use ($app) {
     $app->response->setStatusCode(404, "Not Found")->sendHeaders();
