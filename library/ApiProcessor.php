@@ -5,6 +5,7 @@ use Fichat\Common\RedisManager;
 use Fichat\Common\ReturnMessageManager;
 use Fichat\Common\DBManager;
 use Fichat\Models\AssociationMember;
+use Fichat\Models\BalanceFlow;
 use Fichat\Models\Feedback;
 use Fichat\Models\Files;
 use Fichat\Models\Friend;
@@ -487,6 +488,19 @@ class ApiProcessor {
 				$transaction->rollback();
 			}
 			
+			// 余额流水
+			$bf = new BalanceFlow();
+			$bf->op_type = BALANCE_FLOW_PUBTASK;
+			$bf->target_id = $task->id;
+			$bf->op_amount = $task->task_amount;
+			$bf->user_order_id = 0;
+			$bf->uid = $uid;
+			$bf->create_time = time();
+			$bf->setTransaction($transaction);
+			if (!$bf->save()) {
+				$transaction->rollback();
+			}
+			
 			$data = [
 				'task_id' => $task->id
 			];
@@ -549,6 +563,7 @@ class ApiProcessor {
 			]);
 			$user->setTransaction($transaction);
 			
+			$todayShareJoinSignTIme = $now - ($now % 86400);
 			// 获取今天开始的时间
 			if ($todayShareJoinSignTIme != $user->share_join_sign_time) {
 				$user->share_join_sign_time = $todayShareJoinSignTIme;
@@ -691,6 +706,20 @@ class ApiProcessor {
 			if (!$user ->save()) {
 				$transaction->rollback();
 			}
+			
+			// 余额流水
+			$bf = new BalanceFlow();
+			$bf->op_type = BALANCE_FLOW_CLICKTASK;
+			$bf->target_id = $task->id;
+			$bf->op_amount = $task->click_price;
+			$bf->user_order_id = 0;
+			$bf->uid = $uid;
+			$bf->create_time = time();
+			$bf->setTransaction($transaction);
+			if (!$bf->save()) {
+				$transaction->rollback();
+			}
+			
 			$redis->close();
 			// 事务提交
 			return Utils::commitTcReturn($di, $data, 'E0000');
@@ -747,6 +776,7 @@ class ApiProcessor {
 			if (!$taskRecord->save()) {
 				$transaction->rollback();
 			}
+			
 			// 事务提交
 			return Utils::commitTcReturn($di, ['record_id' => $taskRecord->id], 'E0000');
 		} catch (\Exception $e) {
@@ -880,6 +910,19 @@ class ApiProcessor {
 					if (!$user->save()) {
 						$transaction->rollback();
 					}
+					
+					// 余额流水
+					$bf = new BalanceFlow();
+					$bf->op_type = BALANCE_FLOW_SHARETASK;
+					$bf->target_id = $task->id;
+					$bf->op_amount = $task->share_price;
+					$bf->user_order_id = 0;
+					$bf->uid = $record->uid;
+					$bf->create_time = time();
+					$bf->setTransaction($transaction);
+					if (!$bf->save()) {
+						$transaction->rollback();
+					}
 				}
 			}
 			
@@ -948,6 +991,8 @@ class ApiProcessor {
 			return Utils::processExceptionError($di, $e);
 		}
 	}
+	
+	
 
 }
 

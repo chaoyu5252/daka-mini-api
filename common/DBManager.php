@@ -88,6 +88,8 @@ class DBManager {
 		return true;
 	}
 	
+	// 保存流水
+	
 	// accountId获取用户信息
 	public static function getUserByAccountId($accountId) {
 		return User::findFirst("account_id = $accountId");

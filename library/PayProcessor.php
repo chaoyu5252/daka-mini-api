@@ -2,6 +2,7 @@
 namespace Fichat\Library;
 
 use Fichat\Common\ReturnMessageManager;
+use Fichat\Models\BalanceFlow;
 use Fichat\Models\User;
 use Fichat\Models\UserOrder;
 use Fichat\Proxy\WeixinPay;
@@ -10,6 +11,60 @@ use Fichat\Utils\Utils;
 
 class PayProcessor {
 
+	/**
+	 * 公众号支付成功
+	 *
+	 */
+	public static function publicNoPaySucc($di)
+	{
+		try {
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+			
+			$unionid = $_POST['union_id'];
+			$totalFee = $_POST['total_fee'] ? floatval($_POST['total_fee']) : 0;
+			$orderNum = $_POST['order_num'] ? trim($_POST['order_num']) : '';
+			$orderRemark = $_POST['order_remark'] ? trim($_POST['order_remark']) : '';
+			$data = [];
+			
+			$user = User::findFirst([
+				"conditions" => ""
+			]);
+			// 用户不存在
+			if (!$user) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_NO_USER);
+			}
+			$user->setTransaction($transaction);
+			$newBalance = floatval($user->balance) + $totalFee;
+			
+			// 创建用户订单
+			$order = new UserOrder();
+			$order->setTransaction($transaction);
+			$order->status = 1;
+			$order->user_id = $user->id;
+			$order->consum_type = PAY_ITEM_RECHARGE;
+			$order->amount = $totalFee;
+			$order->fee = 0;
+			$order->order_num = $orderNum;
+			$order->remark = $orderRemark;
+			$order->balance = $newBalance;
+			if (!$order->save())
+			{
+				$transaction->rollback();
+			}
+			
+			// 更新用户余额
+			$user->balance = $newBalance;
+			if (!$user->save())
+			{
+				$transaction->rollback();
+			}
+			$data['stata'] = 1;
+			return Utils::commitTcReturn($di, $data);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
     /*
      *  TODO 微信下单接口
      */
@@ -60,7 +115,7 @@ class PayProcessor {
 			$userOrder->balance = $user->balance;
 			$userOrder->order_num = $out_trade_no;
 			$userOrder->amount = $total_fee;
-			$userOrder->consum_type = PAY_ITEM_RECHARGE;
+			$userOrder->consum_type = BALANCE_FLOW_RECHARGE;
 			// 保存用户订单
 			if (!$userOrder->save()){
 				$transaction->rollback();
@@ -174,6 +229,20 @@ class PayProcessor {
 				$transaction->rollback();
 				return false;
 			}
+			
+			// 创建支付流水
+			$bf = new BalanceFlow();
+			$bf->op_type = PAY_ITEM_RECHARGE;
+			$bf->target_id = 0;
+			$bf->op_amount = $total_fee;
+			$bf->user_order_id = $payOrder->order_num;
+			$bf->uid = $uid;
+			$bf->create_time = time();
+			$bf->setTransaction($transaction);
+			if (!$bf->save()) {
+				$transaction->rollback();
+			}
+			
 		} else {
 			// VIP购买
 		}

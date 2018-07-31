@@ -125,6 +125,12 @@ define('TASK_STATUS_DONE', 2);
 define('TASK_OP_TYPE_CLICK', 1);
 define('TASK_OP_TYPE_SHARE', 2);
 
+define('BALANCE_FLOW_RECHARGE', 1);
+define('BALANCE_FLOW_TAKE', 3);
+define('BALANCE_FLOW_PUBTASK', 4);
+define('BALANCE_FLOW_CLICKTASK', 5);
+define('BALANCE_FLOW_SHARETASK', 6);
+
 /** 错误码 */
 define('ERROR_SUCCESS', 'E0000');
 define('ERROR_TOKEN', 'E0001');
