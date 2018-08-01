@@ -41,7 +41,6 @@ class PayProcessor {
 			}
 			
 			$newBalance = floatval($user->balance) + $totalFee;
-			
 			// 创建用户订单
 			$order = new UserOrder();
 			$order->setTransaction($transaction);
@@ -111,7 +110,7 @@ class PayProcessor {
 			
 			//创建订单
 			$wxPay = new WeixinPay($appid, $user->openid, $mch_id, $mch_key, $out_trade_no, $body, $takeFee, '');
-			$wxPay->transfers();
+			$wxPay->transfers_pay();
 		
 		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);

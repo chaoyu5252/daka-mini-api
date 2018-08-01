@@ -29,8 +29,13 @@ class WeixinPay {
 		return $this->weixinapp();
 	}
 	
+	public function transfers_pay()
+	{
+		return $this->weixinapp(2);
+	}
+	
 	// 提现地址
-	public function transfers() {
+	public function transfers_unifiedorder() {
 		$url = 'https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
 		$parameters = array(
 			'mch_appid' => $this->appid, //小程序ID
@@ -38,10 +43,8 @@ class WeixinPay {
 			'nonce_str' => $this->createNoncestr() , //随机字符串
 			'partner_trade_no' => $this->out_trade_no,
 			'check_name' => 'NO_CHECK',
-			//'total_fee' => floatval(0.01 * 100), //总金额 单位 分
 			'amount' => $this->total_fee,
 			'desc' => utf8_encode('用户提现'),
-			//'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP
 			'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP
 			'openid' => $this->openid, //用户id
 			'trade_type' => 'JSAPI'   //交易类型
@@ -52,7 +55,7 @@ class WeixinPay {
 		//统一下单签名
 		$parameters['sign'] = $this->getSign($parameters);
 		$xmlData = $this->arrayToXml($parameters);
-		$return = $this->xmlToArray($this->postXmlCurl($xmlData, $url, 60));
+		$return = $this->xmlToArray($this->postXmlSslCurl($xmlData, $url, 60));
 		var_dump($return);
 		return $return;
 	}
@@ -81,6 +84,38 @@ class WeixinPay {
 		$xmlData = $this->arrayToXml($parameters);
 		$return = $this->xmlToArray($this->postXmlCurl($xmlData, $url, 60));
 		return $return;
+	}
+	
+	private static function postXmlSslCurl($xml, $url, $second = 30) {
+		$ch = curl_init();
+		//设置超时
+		curl_setopt($ch, CURLOPT_TIMEOUT, $second);
+		curl_setopt($ch, CURLOPT_URL, $url);
+//		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($ch, CURLOPT_SSLCERT,APP_DIR. '/config/wxpay_cert/apiclient_cert.pem');
+		curl_setopt($ch, CURLOPT_SSLKEY,APP_DIR. '/config/wxpay_cert/apiclient_key.pem');
+//		curl_setopt($ch, CURLOPT_CAINFO, '/var/www/html/hongbao/rootca.pem');
+		//设置header
+		curl_setopt($ch, CURLOPT_HEADER, FALSE);
+		//要求结果为字符串且输出到屏幕上
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		//post提交方式
+		curl_setopt($ch, CURLOPT_POST, TRUE);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 40);
+		set_time_limit(0);
+		//运行curl
+		$data = curl_exec($ch);
+		//返回结果
+		if ($data) {
+			curl_close($ch);
+			return $data;
+		} else {
+			$error = curl_errno($ch);
+			curl_close($ch);
+			throw new WxPayException("curl出错，错误码:$error");
+		}
 	}
 	
 	private static function postXmlCurl($xml, $url, $second = 30) {
@@ -134,9 +169,13 @@ class WeixinPay {
 		return $val;
 	}
 	//微信小程序接口
-	private function weixinapp() {
-		//统一下单接口
-		$unifiedorder = $this->unifiedorder();
+	private function weixinapp($type = 1) {
+		//统一下单接口, 1: 普通下单, 2: 企业下单, 用于企业提现到用户零钱
+		if ($type == 1) {
+			$unifiedorder = $this->unifiedorder();
+		} else {
+			$unifiedorder = $this->transfers_unifiedorder();
+		}
 		if ($unifiedorder['return_code'] == "SUCCESS") {
 			$parameters = array(
 				'appId' => $this->appid, //小程序ID
@@ -157,6 +196,7 @@ class WeixinPay {
 		//        print_r($unifiedorder);
 		
 	}
+	
 	//作用：产生随机字符串，不长于32位
 	private function createNoncestr($length = 32) {
 		$chars = "abcdefghijklmnopqrstuvwxyz0123456789";
