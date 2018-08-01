@@ -151,7 +151,6 @@ class PayProcessor {
 			// 创建订单
 			$wxPay = new WeixinPay($appid, $user->openid, $mch_id, $mch_key, $out_trade_no, $body, $takeFee, '');
 			$wxPayRs = $wxPay->transfers_pay();
-			var_dump($wxPayRs);
 			if (array_key_exists('return_code', $wxPayRs)) {
 				return ReturnMessageManager::buildReturnMessage($di, ERROR_TAKE);
 			}
