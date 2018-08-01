@@ -90,6 +90,10 @@ class PayProcessor {
 			}
 			$user->setTransaction($transaction);
 			
+			if ($takeFee < 1) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TAKE_MORE_ONE);
+			}
+			
 			// 检查金额
 			if ($takeFee > $user->balance) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TAKE_MORE);
