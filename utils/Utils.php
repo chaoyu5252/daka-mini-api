@@ -43,29 +43,17 @@ class Utils
 	// 内容检查
 	public static function checkMsg($di, $content)
 	{
-		echo $accessToken = self::getAcessToken($di);
+		$accessToken = self::getAcessToken($di);
 		$url = "https://api.weixin.qq.com/wxa/msg_sec_check?access_token=".$accessToken;
 		
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_POST, 1);
-//		echo '332';
-//		$data = '{ "content":"'.$content.'" }';
-		 $data = json_encode(array('content' => $content), JSON_UNESCAPED_UNICODE);
-//		 var_dump([
-//		 	$data,
-//			 $data1
-//		 ]);
-//		var_dump($data);
-//		echo $data;
-//		curl_setopt($ch, CURLOPT_HEADEROPT, [
-//			'content-type' => 'application/json;charset:utf-8'
-//		]);
+		$data = json_encode(array('content' => $content), JSON_UNESCAPED_UNICODE);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$checkRs = json_decode(curl_exec($ch), true);
 		curl_close($ch);
-		var_dump($checkRs);
 		if ($checkRs['errcode'] == 0) {
 			return true;
 		}

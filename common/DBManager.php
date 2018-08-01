@@ -101,7 +101,7 @@ class DBManager {
 	}
 	
 	// 检查任务各项参数
-	public static function checkTaskParams($user)
+	public static function checkTaskParams($di, $user)
 	{
 		// 检查余额
 		$needMoney = $_POST['task_money'] ? $_POST['task_money'] : 0;
@@ -175,6 +175,12 @@ class DBManager {
 			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_CLICK_AND_SHARE_SUM_MORE);
 		}
 		
+		$content = trim($_POST['task_desp']);
+		// 检查发送的相关信息
+		if (!Utils::checkMsg($di, $content)) {
+			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DESP_UNLAW);
+		}
+		
 		// 返回任务信息
 		return [
 			'click_price' => $clickPrice,
@@ -183,7 +189,7 @@ class DBManager {
 			'share_join_count' => $shareJoinCount,
 			'share_price' => $sharePrice,
 			'task_money' => $needMoney,
-			'task_desp' => trim($_POST['content']),
+			'task_desp' => $content,
 			'task_cover' => $_POST['task_cover'] ? intval($_POST['task_cover']) : 0,
 			'order_amount' => $needMoney + $fee
 		];

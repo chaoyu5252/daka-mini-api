@@ -156,6 +156,8 @@ define('ERROR_TASK_SHARE_COUNT_LESS', 'E0019');
 define('ERROR_TAKE_MORE_ONE', 'E0020');
 define('ERROR_TAKE_MORE', 'E0021');
 define('ERROR_TAKE', 'E0022');
+define('ERROR_TASK_DESP_UNLAW', 'E0023');           // 任务描述含有非法词汇
+define('ERROR_TASK_PIC_UNLAW', 'E0024');            // 任务图片含有非法内容
 define('ERROR_UPLOAD', 'E0303');
 define('ERROR_UPLOAD_FILE_TYPE', 'E0304');
 define('ERROR_LOGIC', 'E9999');

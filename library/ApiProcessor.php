@@ -304,11 +304,16 @@ class ApiProcessor {
 					$shareCount = -1;
 					$isShared = 0;
 					foreach ($records as $record) {
-						if ($record->op_type == TASK_OP_TYPE_CLICK) {
-							$isCliked = 1;
-						} else if ($record->op_type == TASK_OP_TYPE_SHARE) {
-							$isShared = 1;
-							$shareCount = count(json_decode($record->join_members));
+						if ($record->task_id == $item['id']) {
+							if ($record->op_type == TASK_OP_TYPE_CLICK && $record->uid == $uid) {
+								$isCliked = 1;
+								echo '333, taskid:'.$record->task_id;
+								break 1;
+							} else if ($record->op_type == TASK_OP_TYPE_SHARE && $record->uid == $uid) {
+								$isShared = 1;
+								$shareCount = count(json_decode($record->join_members));
+								break 1;
+							}
 						}
 					}
 					$item['shared'] = $isShared;
@@ -414,12 +419,13 @@ class ApiProcessor {
 					$isShared = 0;
 					$shareCount = -1;
 					foreach ($records as $record) {
-						if ($record->op_type == TASK_OP_TYPE_CLICK) {
-							$isCliked = 1;
-						} else if ($record->op_type == TASK_OP_TYPE_SHARE) {
-							$isShared = 1;
-							$shareCount = count(json_decode($record->join_members));
-							
+						if ($item['id'] == $record->task_id) {
+							if ($record->op_type == TASK_OP_TYPE_CLICK) {
+								$isCliked = 1;
+							} else if ($record->op_type == TASK_OP_TYPE_SHARE) {
+								$isShared = 1;
+								$shareCount = count(json_decode($record->join_members));
+							}
 						}
 					}
 					$item['clicked'] = $isCliked;
@@ -445,9 +451,8 @@ class ApiProcessor {
 			$transaction = $di->get(SERVICE_TRANSACTION);
 			$user->setTransaction($transaction);
 			
-			
 			// 检查任务的各项数据
-			$checkParamRs = DBManager::checkTaskParams($user);
+			$checkParamRs = DBManager::checkTaskParams($di, $user);
 			if (array_key_exists('error_code', $checkParamRs)) {
 				return $checkParamRs;
 			}
