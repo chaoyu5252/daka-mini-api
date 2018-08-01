@@ -78,8 +78,8 @@ class PayProcessor {
 		try {
 			
 			$takeFee = $_POST['take_fee'] ? floatval($_POST['take_fee']) : 0;
-			$takeFee = $takeFee * 100;
 			
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
 			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
 			$uid = $gd->uid;
 			
@@ -88,6 +88,7 @@ class PayProcessor {
 			if (!$user) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_NO_USER);
 			}
+			$user->setTransaction($transaction);
 			
 			// 检查金额
 			if ($takeFee > $user->balance) {
@@ -108,10 +109,50 @@ class PayProcessor {
 			$out_trade_no = $mch_id.$now;
 			$body = '';
 			
-			//创建订单
+			$newBalance = floatval($user->balance) - $takeFee;
+			// 更新订单
+			$uo = new UserOrder();
+			$uo -> order_num = $out_trade_no;
+			$uo -> balance = $newBalance;
+			$uo -> amount = $takeFee;
+			$uo -> remark = "用户提现";
+			$uo -> consum_type = PAY_ITEM_TAKE;
+			$uo -> status = 1;
+			$uo -> fee = 0;
+			// 保存
+			$uo -> setTransaction($transaction);
+			if (!$uo->save()) {
+				$transaction->rollback();
+			}
+			
+			// 更新用户的余额
+			$user->balance = $newBalance;
+			if (!$user->save()) {
+				$transaction->rollback();
+			}
+			
+			// 存入现金流
+			$bf = new BalanceFlow();
+			$bf -> op_type = BALANCE_FLOW_TAKE;
+			$bf -> op_amount = $takeFee;
+			$bf -> target_id = 0;
+			$bf -> user_order_id = $out_trade_no;
+			$bf -> uid = $uid;
+			$bf -> setTransaction($transaction);
+			if (!$bf -> save()) {
+				$transaction->rollback();
+			}
+			
+			$takeFee = $takeFee * 100;
+			// 创建订单
 			$wxPay = new WeixinPay($appid, $user->openid, $mch_id, $mch_key, $out_trade_no, $body, $takeFee, '');
-			$wxPay->transfers_pay();
-		
+			$wxPayRs = $wxPay->transfers_pay();
+			var_dump($wxPayRs);
+			if (array_key_exists('return_code', $wxPayRs)) {
+				return ReturnMessageManager::buildReturnMessage($di, ERROR_TAKE);
+			}
+			// 更新流水和订单, 并返回
+			return Utils::commitTcReturn($di, ['balance' => $newBalance], ERROR_SUCCESS);
 		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);
 		}

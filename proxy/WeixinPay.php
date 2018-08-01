@@ -44,10 +44,9 @@ class WeixinPay {
 			'partner_trade_no' => $this->out_trade_no,
 			'check_name' => 'NO_CHECK',
 			'amount' => $this->total_fee,
-			'desc' => utf8_encode('用户提现'),
+			'desc' => "大咖悬赏提现",
 			'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP
 			'openid' => $this->openid, //用户id
-			'trade_type' => 'JSAPI'   //交易类型
 		);
 		if ($this->notify_url) {
 			$parameters['notify_url'] = $this->notify_url;  //通知地址  确保外网能正常访问
@@ -56,7 +55,6 @@ class WeixinPay {
 		$parameters['sign'] = $this->getSign($parameters);
 		$xmlData = $this->arrayToXml($parameters);
 		$return = $this->xmlToArray($this->postXmlSslCurl($xmlData, $url, 60));
-		var_dump($return);
 		return $return;
 	}
 	
