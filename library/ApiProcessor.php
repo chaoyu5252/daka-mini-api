@@ -603,6 +603,14 @@ class ApiProcessor {
 	{
 		try {
 			$id = Utils::getMicoTs();
+			
+			// 检查图片
+			if ($_FILES) {
+				if (!Utils::checkImg($di, 'file')) {
+					return ReturnMessageManager::buildReturnMessage(ERROR_UPLOAD_FILE_UNLAW);
+				}
+			}
+			
 			$ossRs = OssProxy::ossUploadFile($di, OSS_BUCKET_RTCOVER, $id, UPLOAD_BUSS_RTCOVER, 'file', "");
 			if ($ossRs) {
 				$transaction = Utils::getService($di, SERVICE_TRANSACTION);
