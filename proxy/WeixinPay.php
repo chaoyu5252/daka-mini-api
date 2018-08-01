@@ -28,6 +28,35 @@ class WeixinPay {
 		//统一下单接口
 		return $this->weixinapp();
 	}
+	
+	// 提现地址
+	public function transfers() {
+		$url = 'https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
+		$parameters = array(
+			'mch_appid' => $this->appid, //小程序ID
+			'mchid' => $this->mch_id, //商户号
+			'nonce_str' => $this->createNoncestr() , //随机字符串
+			'partner_trade_no' => $this->out_trade_no,
+			'check_name' => 'NO_CHECK',
+			//'total_fee' => floatval(0.01 * 100), //总金额 单位 分
+			'amount' => $this->total_fee,
+			'desc' => utf8_encode('用户提现'),
+			//'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP
+			'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP
+			'openid' => $this->openid, //用户id
+			'trade_type' => 'JSAPI'   //交易类型
+		);
+		if ($this->notify_url) {
+			$parameters['notify_url'] = $this->notify_url;  //通知地址  确保外网能正常访问
+		}
+		//统一下单签名
+		$parameters['sign'] = $this->getSign($parameters);
+		$xmlData = $this->arrayToXml($parameters);
+		$return = $this->xmlToArray($this->postXmlCurl($xmlData, $url, 60));
+		var_dump($return);
+		return $return;
+	}
+	
 	//统一下单接口
 	private function unifiedorder() {
 		$url = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
@@ -40,10 +69,10 @@ class WeixinPay {
 			//'out_trade_no' => '2015450806125348', //商户订单号
 			'out_trade_no' => $this->out_trade_no,
 			//'total_fee' => floatval(0.01 * 100), //总金额 单位 分
-			'total_fee' => $this->total_fee,
+			'total_fee' => $this->total_fee,        //通知地址  确保外网能正常访问
+			'notify_url' => $this->notify_url,
 			//'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP
 			'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP
-			'notify_url' => $this->notify_url, //通知地址  确保外网能正常访问
 			'openid' => $this->openid, //用户id
 			'trade_type' => 'JSAPI'   //交易类型
 		);
@@ -53,6 +82,7 @@ class WeixinPay {
 		$return = $this->xmlToArray($this->postXmlCurl($xmlData, $url, 60));
 		return $return;
 	}
+	
 	private static function postXmlCurl($xml, $url, $second = 30) {
 		$ch = curl_init();
 		//设置超时

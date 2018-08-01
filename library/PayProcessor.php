@@ -34,6 +34,12 @@ class PayProcessor {
 				return ReturnMessageManager::buildReturnMessage(ERROR_NO_USER);
 			}
 			$user->setTransaction($transaction);
+			
+			// 淡定已经有了就不再处理了
+			if (UserOrder::findFirst("order_num = '".$orderNum.'"')) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS);
+			}
+			
 			$newBalance = floatval($user->balance) + $totalFee;
 			
 			// 创建用户订单
@@ -60,6 +66,53 @@ class PayProcessor {
 			}
 			$data['stata'] = 1;
 			return Utils::commitTcReturn($di, $data);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	/**
+	 * 企业账户提现到零钱
+	 */
+	public static function wxTakeToUser($di)
+	{
+		try {
+			
+			$takeFee = $_POST['take_fee'] ? floatval($_POST['take_fee']) : 0;
+			$takeFee = $takeFee * 100;
+			
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			
+			// 获取用户信息
+			$user = User::findFirst("id = ".$uid);
+			if (!$user) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_NO_USER);
+			}
+			
+			// 检查金额
+			if ($takeFee > $user->balance) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_TAKE_MORE);
+			}
+			
+			$config = Utils::getService($di, SERVICE_CONFIG);
+			$wxAppConfig = $config[CONFIG_KEY_WXMINI];
+			$wxPayConfig = $config[CONFIG_KEY_WXPAY];
+			
+			//配置信息
+			$appid      = $wxAppConfig['app_id'];
+			$mch_id     = $wxPayConfig['mch_id'];
+			$mch_key        = $wxPayConfig['mch_secret'];
+			
+			$now = time();
+			
+			$out_trade_no = $mch_id.$now;
+			$body = '';
+			
+			//创建订单
+			$wxPay = new WeixinPay($appid, $user->openid, $mch_id, $mch_key, $out_trade_no, $body, $takeFee, '');
+			$wxPay->transfers();
+		
 		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);
 		}
@@ -126,9 +179,9 @@ class PayProcessor {
 			// 回调地址
 			$notify_url = $_SERVER['SERVER_NAME']."/_API/_wxPayNotify";
 			
-			//订单号
-			$out_trade_no = $mch_id.time();
 			$now          = time();
+			//订单号
+			$out_trade_no = $mch_id.$now;
 			
 			$user = User::findFirst("id = ".$uid);
 			if (!$user) {

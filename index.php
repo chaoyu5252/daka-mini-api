@@ -157,6 +157,10 @@ $app->post('/_API/_loadBalanceFlow', function () use ($di) {
 	return PayProcessor::loadBalanceFlow($di);
 });
 
+$app->post('/_API/_wxPayTake', function () use ($di) {
+	return PayProcessor::wxTakeToUser($di);
+});
+
 // 获取世界排行
 $app->post('/_API/_getWorldRank', function () use ($di) {
 	return RankProcessor::getWorldRank($di);
@@ -173,7 +177,7 @@ $app->get('/_API/_test', function () use ($di) {
 
 $app->post('/_API/_test', function () use ($di) {
 	try {
-		return Utils\Utils::checkMsg($di, '完2347全dfji试3726测asad感3847知qwez到');
+		return Utils\Utils::checkMsg($di, "毛泽东万岁");
 	} catch (\Exception $e) {
 		var_dump($e);
 	}
