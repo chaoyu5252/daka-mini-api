@@ -307,7 +307,6 @@ class ApiProcessor {
 						if ($record->task_id == $item['id']) {
 							if ($record->op_type == TASK_OP_TYPE_CLICK && $record->uid == $uid) {
 								$isCliked = 1;
-								echo '333, taskid:'.$record->task_id;
 								break 1;
 							} else if ($record->op_type == TASK_OP_TYPE_SHARE && $record->uid == $uid) {
 								$isShared = 1;
@@ -319,10 +318,6 @@ class ApiProcessor {
 					$item['shared'] = $isShared;
 					$item['clicked'] = $isCliked;
 					$item['my_share_join_count'] = $shareCount;
-					
-					
-					
-					
 					array_push($taskList, $item);
 				}
 			}
