@@ -43,21 +43,24 @@ class Utils
 	// 内容检查
 	public static function checkMsg($di, $content)
 	{
-		$accessToken = self::getAcessToken($di);
-		$url = "https://api.weixin.qq.com/wxa/msg_sec_check?access_token=".$accessToken;
-		
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		$data = json_encode(array('content' => $content), JSON_UNESCAPED_UNICODE);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		$checkRs = json_decode(curl_exec($ch), true);
-		curl_close($ch);
-		if ($checkRs['errcode'] == 0) {
-			return true;
+		if ($content) {
+			$accessToken = self::getAcessToken($di);
+			$url = "https://api.weixin.qq.com/wxa/msg_sec_check?access_token=".$accessToken;
+			
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_POST, 1);
+			$data = json_encode(array('content' => $content), JSON_UNESCAPED_UNICODE);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			$checkRs = json_decode(curl_exec($ch), true);
+			curl_close($ch);
+			if ($checkRs['errcode'] == 0) {
+				return true;
+			}
+			return false;
 		}
-		return false;
+		return true;
 	}
 	
 	public static function checkImg($di, $key)

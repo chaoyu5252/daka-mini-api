@@ -1025,14 +1025,15 @@ class ApiProcessor {
 	}
 	
 	// 发消息
-//	public static function sendPayMsg($di)
-//	{
-//		try {
-//
-//		} catch (\Exception $e) {
-//
-//		}
-//	}
+	public static function sendPayMsg($di)
+	{
+		try {
+		
+		
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
 }
 
 
