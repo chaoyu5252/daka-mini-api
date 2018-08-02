@@ -456,6 +456,16 @@ class ApiProcessor {
 			
 			$taskInfo = $task->toArray();
 			
+			// 获取文件地址
+			$fileInfo = Files::findFirst([
+				"conditions" => "id = ".$task->cover_pic
+			]);
+			
+			$taskInfo['cover_pic'] = "";
+			if ($fileInfo) {
+				$taskInfo['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $fileInfo->url);
+			}
+			
 			// 获取用户的任务记录
 			$records = RewardTaskRecord::find([
 				"conditions" => "uid = ".$uid." AND task_id = ".$taskId
@@ -474,6 +484,9 @@ class ApiProcessor {
 					}
 				}
 			}
+			
+			// 获取文件位置
+			
 			$taskInfo['clicked'] = $isCliked;
 			$taskInfo['my_share_join_count'] = $shareCount;
 			$taskInfo['shared'] = $isShared;
