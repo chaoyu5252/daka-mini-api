@@ -641,6 +641,7 @@ class ApiProcessor {
 		try {
 			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
 			$redis = Utils::getService($di, SERVICE_REDIS);
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
 			$uid = $gd->uid;
 			
 			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
@@ -649,9 +650,15 @@ class ApiProcessor {
 				"for_update" => true
 			]);
 			
+			if (!$task) {
+				// 任务不存在
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
+			}
+			$task->setTransaction($transaction);
 			// 检查用户是否已经点击过
 			if (RewardTaskRecord::findFirst([ "conditions" => "task_id=".$taskId." AND op_type = ".TASK_OP_TYPE_CLICK." AND uid = ".$uid])) {
-				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS);
+				$task->total_click_count += 1;
+				return Utils::commitTcReturn($di, [], ERROR_SUCCESS);
 			}
 			
 			// 检查用户是否已经超过了每日参与任务的最大数量
@@ -659,7 +666,7 @@ class ApiProcessor {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_LIMIT);
 			}
 			
-			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+			
 			// 获取用户数据
 			$user = User::findFirst("id = ".$uid);
 			$user->setTransaction($transaction);
@@ -676,7 +683,7 @@ class ApiProcessor {
 					$transaction->rollback();
 				}
 				// 返回结果
-				Return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, []);
+				return Utils::commitTcReturn($di, [], ERROR_SUCCESS);
 			}
 			
 			$data = [];
@@ -687,6 +694,7 @@ class ApiProcessor {
 			$balance = floatval($task->balance);
 			
 			$task->total_click_count += 1;
+			$task->effect_click_count += 1;
 			$taskBalance = $balance - $getMoney;
 			$taskStatus = $task->status;
 			if ($taskBalance == 0) {
@@ -760,7 +768,7 @@ class ApiProcessor {
 			if (!$task) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
 			}
-			
+			$task->setTransaction($transaction);
 			// 自己点击自己不做任何处理
 			if ($task->owner_id == $uid) {
 				$task->total_share_count += 1;
@@ -768,12 +776,20 @@ class ApiProcessor {
 					$transaction->rollback();
 				}
 				// 返回结果
-				Return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, []);
+				return Utils::commitTcReturn($di, [], ERROR_SUCCESS);
 			}
+			
+			// 增加一次分享
+			$task->total_share_count += 1;
 			
 			// 检查用户是否已经超过了每日参与任务的最大数量
 			if (!DBManager::checkDayTaskTimes($uid)) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_LIMIT);
+			}
+			
+			// 保存分享
+			if (!$task->save()) {
+				$transaction->rollback();
 			}
 			
 			// 检查用户是否已经点击过
@@ -886,7 +902,7 @@ class ApiProcessor {
 				}
 				$record -> join_members = json_encode($joinMembers);
 				if (count($joinMembers) == $task->share_join_count) {
-					$task->total_share_count += 1;
+					$task->effect_share_count += 1;
 					$newTaskBalance = $task->balance - $task->share_price;
 					if ($newTaskBalance <= 0) {
 						$task->balance = 0;

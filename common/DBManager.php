@@ -79,9 +79,14 @@ class DBManager {
 		$now = time();
 		$dayBeginTime = $now - ($now % 86400);
 		$dayEndTime = $dayBeginTime + 86400;
-		$count = RewardTaskRecord::count([
-			"conditions" => "uid = ".$uid." AND create_time >= ".$dayBeginTime." AND create_time <=".$dayEndTime
+		$records = RewardTaskRecord::find([
+			"conditions" => "uid = ".$uid." AND create_time >= ".$dayBeginTime." AND create_time <=".$dayEndTime,
+			"columns" => "distinct(id)"
 		]);
+		$count = 0;
+		if ($records) {
+			$count = count($records -> toArray());
+		}
 		if ($count == 5) {
 			return false;
 		}
