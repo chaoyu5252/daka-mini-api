@@ -36,7 +36,7 @@ class PayProcessor {
 			$user->setTransaction($transaction);
 			
 			// 淡定已经有了就不再处理了
-			if (UserOrder::findFirst("order_num = '".$orderNum.'"')) {
+			if (UserOrder::findFirst("order_num = '".$orderNum."'")) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS);
 			}
 			
@@ -66,6 +66,7 @@ class PayProcessor {
 			$data['stata'] = 1;
 			return Utils::commitTcReturn($di, $data);
 		} catch (\Exception $e) {
+			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
@@ -142,6 +143,7 @@ class PayProcessor {
 			$bf -> target_id = 0;
 			$bf -> user_order_id = $out_trade_no;
 			$bf -> uid = $uid;
+			$bf -> create_time = $now;
 			$bf -> setTransaction($transaction);
 			if (!$bf -> save()) {
 				$transaction->rollback();
