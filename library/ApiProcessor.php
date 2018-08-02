@@ -925,7 +925,6 @@ class ApiProcessor {
 			// 返回任务记录
 			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_records' => $rList]);
 		} catch (\Exception $e) {
-			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
