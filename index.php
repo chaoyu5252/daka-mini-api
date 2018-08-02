@@ -120,6 +120,11 @@ $app->post('/_API/_publishTask', function() use ($di){
 	return ApiProcessor::publishTask($di);
 });
 
+// 获取任务信息
+$app->post('/_API/_getTaskInfo', function () use ($di) {
+	return ApiProcessor::getTaskInfo($di);
+});
+
 // 获取分享任务需要的人数
 $app->post('/_API/_shareNeedsJoinCount', function() use ($di){
 	return ApiProcessor::getShareJoinCount($di);

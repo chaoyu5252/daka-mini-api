@@ -436,6 +436,53 @@ class ApiProcessor {
 		}
 	}
 	
+	// 获取任务详情
+	public static function getTaskInfo($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			
+			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
+			$task = RewardTask::findFirst([
+				"conditions" => "id = ".$taskId,
+				"for_update" => true
+			]);
+			
+			if (!$task) {
+				// 任务不存在
+				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_NO_EXIST);
+			}
+			
+			$taskInfo = $task->toArray();
+			
+			// 获取用户的任务记录
+			$records = RewardTaskRecord::find([
+				"conditions" => "uid = ".$uid." AND task_id = ".$taskId
+			]);
+			
+			$isCliked = 0;
+			$isShared = 0;
+			$shareCount = -1;
+			if ($records) {
+				foreach ($records as $record) {
+					if ($record->op_type == TASK_OP_TYPE_CLICK) {
+						$isCliked = 1;
+					} else if ($record->op_type == TASK_OP_TYPE_SHARE) {
+						$isShared = 1;
+						$shareCount = count(json_decode($record->join_members));
+					}
+				}
+			}
+			$taskInfo['clicked'] = $isCliked;
+			$taskInfo['my_share_join_count'] = $shareCount;
+			$taskInfo['shared'] = $isShared;
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_info' => $taskInfo]);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
 	// 发布悬赏任务
 	public static function publishTask($di)
 	{
