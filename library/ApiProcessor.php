@@ -718,11 +718,20 @@ class ApiProcessor {
 			// 检查用户是否已经点击过
 			if (RewardTaskRecord::findFirst([ "conditions" => "task_id=".$taskId." AND op_type = ".TASK_OP_TYPE_CLICK." AND uid = ".$uid])) {
 				$task->total_click_count += 1;
+				if (!$task->save()) {
+					$transaction->rollback();
+				}
+				$transaction->commit();
 				return Utils::commitTcReturn($di, [], ERROR_SUCCESS);
 			}
 			
 			// 检查用户是否已经超过了每日参与任务的最大数量
 			if (!DBManager::checkDayTaskTimes($uid)) {
+				$task->total_click_count += 1;
+				if (!$task->save()) {
+					$transaction->rollback();
+				}
+				$transaction->commit();
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_LIMIT);
 			}
 			
@@ -844,6 +853,11 @@ class ApiProcessor {
 			
 			// 检查用户是否已经超过了每日参与任务的最大数量
 			if (!DBManager::checkDayTaskTimes($uid)) {
+				$task->total_share_count += 1;
+				if (!$task->save()) {
+					$transaction->rollback();
+				}
+				$transaction->commit();
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_LIMIT);
 			}
 			
