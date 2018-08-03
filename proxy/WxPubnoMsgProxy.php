@@ -8,6 +8,10 @@
 
 namespace Fichat\Proxy;
 
+use Fichat\Utils\Utils;
+require_once APP_DIR . '/lib/wxmsg/sha1.php';
+require_once APP_DIR . '/lib/wxmsg/wxBizMsgCrypt.php';
+
 define('ENCODING_AES_KEY', '2PTGFfThqfSq8CsRt1MVhl7juizik6whaXyel2SVOv3');
 define('TOKEN', 'dakamini2018');
 
@@ -25,17 +29,12 @@ class WxPubnoMsgProxy
 	private $encryptType;
 	private $msgSignature;
 	private $accessToken;
-	private $recvMsg;
 	
 	function __construct($wxConfig)
 	{
 		$this->appid = $wxConfig['app_id'];
 		$this->appSecret = $wxConfig['app_key'];
-	}
-	
-	
-	public function getMessage($di)
-	{
+		
 		// 初始化消息
 		$this->signature = $_GET["signature"];
 		$this->timestamp = $_GET["timestamp"];
@@ -43,28 +42,13 @@ class WxPubnoMsgProxy
 		$this->toUserOpenId = $_GET["openid"];
 		$this->encryptType = $_GET["encrypt_type"];
 		$this->msgSignature = $_GET["msg_signature"];
-		
-		// 检查签名
-		if (!$this->checkSignature()) {
-			error_log("checkSignature failed");
-			return false;
-		}
-		
-		// 拉取授权
-		$this->getAccessToken();
-		
-		// 处理消息
-		$this->processRecvMsg($di);
-//		if ($procRs) {
-//			return $procRs;
-//		}
-		// 返回接收的消息
-		return $this->recvMsg;
 	}
 	
 	public function sendMessage()
 	{
 		$curl2 = curl_init();
+		// 获取accessToken;
+		$this->getAccessToken();
 		//设置抓取的url
 		$url = 'https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token='.$this->accessToken;
 		curl_setopt($curl2, CURLOPT_URL, $url);
@@ -88,50 +72,15 @@ class WxPubnoMsgProxy
 		curl_setopt($curl2, CURLOPT_POSTFIELDS, $post_data);
 		//执行命令
 		$data = curl_exec($curl2);
+		var_dump($data);
 		//关闭URL请求
 		curl_close($curl2);
-	}
-	
-	private function processRecvMsg($di)
-	{
-		$log = Utils::getService($di, SERVICE_LOG);
-		$postData = file_get_contents("php://input");
-		$log->debug("wxmessage:".$postData);
-		// 解密消息
-		$msgCrypt = new \WXBizMsgCrypt();
-		$msg = '';
-		$errCode = $msgCrypt->decryptMsg($this->msgSignature, $this->timestamp, $this->nonce, $postData, $msg);
-		if ($errCode != 0) {
-			error_log("descrypt msg failed");
-			return $errCode;
-		}
-		switch ($msg) {
-			case "":
-				break;
-			default:
-				// echo "默认的处理";
-				return;
-		}
-	}
-	
-	private function checkSignature()
-	{
-		// 2. 检查签名确认消息来自微信服务器
-		$tmpArr = array(TOKEN, $this->signature, $this->nonce);
-		sort($tmpArr, SORT_STRING);
-		$tmpStr = implode( $tmpArr );
-		$tmpStr = sha1( $tmpStr );
-		if( $tmpStr != $this->msgSignature ){
-			return false;
-		}
-		return true;
 	}
 	
 	private function getAccessToken()
 	{
 		// 获取access_token的地址
 		$url = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=".$this->appid."&secret=".$this->appSecret;
-		
 		$curl = curl_init();
 		//设置抓取的url
 		curl_setopt($curl, CURLOPT_URL, $url);

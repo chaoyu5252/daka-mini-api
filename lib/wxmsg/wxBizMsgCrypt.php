@@ -7,10 +7,10 @@
  */
 
 
-include_once APP_DIR."/lib/wxmsg/sha1.php";
-include_once APP_DIR."/lib/wxmsg/xmlparse.php";
-include_once APP_DIR."/lib/wxmsg/pkcs7Encoder.php";
-include_once APP_DIR."/lib/wxmsg/errorCode.php";
+include_once APP_DIR . "/lib/wxmsg/sha1.php";
+include_once APP_DIR . "/lib/wxmsg/xmlparse.php";
+include_once APP_DIR . "/lib/wxmsg/pkcs7Encoder.php";
+include_once APP_DIR . "/lib/wxmsg/errorCode.php";
 
 /**
  * 1.第三方回复加密消息给公众平台；

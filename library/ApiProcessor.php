@@ -1107,9 +1107,10 @@ class ApiProcessor {
 			// 初始化消息处理对象
 			$wxMsgProxy = new WxPubnoMsgProxy($wxConfig);
 			// 接收消息
-			if (!$wxMsgProxy->getMessage($di)) {
-				return false;
-			}
+//			if (!$wxMsgProxy->getMessage($di)) {
+//				return false;
+//			}
+			
 			// 发送消息
 			$wxMsgProxy->sendMessage();
 			
