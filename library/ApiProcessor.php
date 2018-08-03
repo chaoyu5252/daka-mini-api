@@ -679,7 +679,6 @@ class ApiProcessor {
 					'file_index' => 0
 				]);
 				if(!$files->save()) {
-					var_dump($files->getMessage());
 					$transaction->rollback();
 				}
 				// 提交事务
