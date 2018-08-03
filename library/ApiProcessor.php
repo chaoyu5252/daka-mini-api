@@ -586,6 +586,7 @@ class ApiProcessor {
 		try {
 			$data = [
 				'share_needs_count' => [
+					'5' => 2.5,
 					'10' => 2.5,
 					'20' => 6,
 					'30' => 9,
