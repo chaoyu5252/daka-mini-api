@@ -30,7 +30,7 @@ class WxPubnoMsgProxy
 	function __construct($wxConfig)
 	{
 		$this->appid = $wxConfig['app_id'];
-		$this->appSecret = $wxConfig['app_secret'];
+		$this->appSecret = $wxConfig['app_key'];
 	}
 	
 	
