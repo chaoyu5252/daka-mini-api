@@ -46,6 +46,7 @@ class WxPubnoMsgProxy
 		
 		// 检查签名
 		if (!$this->checkSignature()) {
+			error_log("checkSignature failed");
 			return false;
 		}
 		
@@ -53,10 +54,10 @@ class WxPubnoMsgProxy
 		$this->getAccessToken();
 		
 		// 处理消息
-		$procRs = $this->processRecvMsg($di);
-		if ($procRs) {
-			return $procRs;
-		}
+		$this->processRecvMsg($di);
+//		if ($procRs) {
+//			return $procRs;
+//		}
 		// 返回接收的消息
 		return $this->recvMsg;
 	}
@@ -101,6 +102,7 @@ class WxPubnoMsgProxy
 		$msg = '';
 		$errCode = $msgCrypt->decryptMsg($this->msgSignature, $this->timestamp, $this->nonce, $postData, $msg);
 		if ($errCode != 0) {
+			error_log("descrypt msg failed");
 			return $errCode;
 		}
 		switch ($msg) {
