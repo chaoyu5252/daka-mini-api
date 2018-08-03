@@ -174,7 +174,7 @@ $di->setShared('redis_conns', function () use ($config) {
  * Logger service
  */
 
-$di->setShared('logger', function () use ($config) {
+$di->setShared(SERVICE_LOG, function () use ($config) {
 	$loggerFile = $config['logger']['path'] . $config['logger']['filename'];
 	$logger = new FileLogger($loggerFile, array(
 		'mode' => 'aw'

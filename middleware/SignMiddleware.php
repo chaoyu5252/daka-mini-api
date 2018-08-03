@@ -28,6 +28,7 @@ class SignMiddleware implements MiddlewareInterface
         '/_API/_logout',            // 退出登录
 	    '/_API/_wxPayNotify',       // 微信支付回调
 	    '/_API/_publicNoPaySucc',   // 公众号支付成功, 通知
+	    '/_API/_sendPayMsg',        // 发送客服想消息
 	    '/_API/_test'
     ];
 

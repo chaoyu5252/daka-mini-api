@@ -27,6 +27,7 @@ use Fichat\Proxy\WXBizDataCrypt;
 use Fichat\Proxy\WxLoginProxy;
 use Fichat\Proxy\WxPayProxy;
 
+use Fichat\Proxy\WxPubnoMsgProxy;
 use Fichat\Utils\EmptyObj;
 use Fichat\Utils\KaException;
 use Fichat\Utils\MessageSender;
@@ -1097,12 +1098,21 @@ class ApiProcessor {
 		}
 	}
 	
-	// 发消息
+	// 发送微信支付消息
 	public static function sendPayMsg($di)
 	{
 		try {
-		
-		
+			$config = Utils::getService($di, SERVICE_CONFIG)->toArray();
+			$wxConfig = $config[CONFIG_KEY_WXMINI];
+			// 初始化消息处理对象
+			$wxMsgProxy = new WxPubnoMsgProxy($wxConfig);
+			// 接收消息
+			if (!$wxMsgProxy->getMessage($di)) {
+				return false;
+			}
+			// 发送消息
+			$wxMsgProxy->sendMessage();
+			
 		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);
 		}

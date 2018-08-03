@@ -145,6 +145,11 @@ $app->post('/_API/_getTaskDeail', function () use ($di) {
 	return ApiProcessor::getTaskDeail($di);
 });
 
+// 发送支付消息
+$app->post('/_API/_sendPayMsg', function () use ($di) {
+	return ApiProcessor::sendPayMsg($di);
+});
+
 // 支付相关
 $app->post('/_API/_wxPayOrder', function() use ($di){
 	return PayProcessor::wxPayOrder($di);
