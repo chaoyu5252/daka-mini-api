@@ -72,7 +72,6 @@ class WxPubnoMsgProxy
 		curl_setopt($curl2, CURLOPT_POSTFIELDS, $post_data);
 		//执行命令
 		$data = curl_exec($curl2);
-		var_dump($data);
 		//关闭URL请求
 		curl_close($curl2);
 	}
