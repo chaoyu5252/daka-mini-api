@@ -44,7 +44,8 @@ class SignMiddleware implements MiddlewareInterface
     {
         // 检查是否在非检查Sign的列表中
         try {
-            if (!in_array($_SERVER['REQUEST_URI'], $this->no_sign_proto)) {
+        	$urlQuery = $app->request->getQuery();
+            if (!in_array($urlQuery['_url'], $this->no_sign_proto)) {
                 // 从APP中获取配置文件
                 $config = $app->getDI()->get('config');
                 // 检查是否调试
