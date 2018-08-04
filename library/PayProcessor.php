@@ -63,6 +63,20 @@ class PayProcessor {
 			{
 				$transaction->rollback();
 			}
+			
+			// 创建支付流水
+			$bf = new BalanceFlow();
+			$bf->op_type = BALANCE_FLOW_RECHARGE;
+			$bf->target_id = 0;
+			$bf->op_amount = $totalFee;
+			$bf->user_order_id = $orderNum;
+			$bf->uid = $user->uid;
+			$bf->create_time = time();
+			$bf->setTransaction($transaction);
+			if (!$bf->save()) {
+				$transaction->rollback();
+			}
+			
 			$data['stata'] = 1;
 			return Utils::commitTcReturn($di, $data);
 		} catch (\Exception $e) {
@@ -362,7 +376,7 @@ class PayProcessor {
 			
 			// 创建支付流水
 			$bf = new BalanceFlow();
-			$bf->op_type = PAY_ITEM_RECHARGE;
+			$bf->op_type = BALANCE_FLOW_RECHARGE;
 			$bf->target_id = 0;
 			$bf->op_amount = $total_fee;
 			$bf->user_order_id = $payOrder->order_num;
