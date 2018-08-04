@@ -348,7 +348,7 @@ class ApiProcessor {
 			if ($tasks) {
 				foreach ($tasks as $task) {
 					$item = $task->r->toArray();
-					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
+					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url).OSS_MINI_TASK_PUBLIST;
 					array_push($taskList, $item);
 				}
 			}
@@ -465,6 +465,7 @@ class ApiProcessor {
 			$taskInfo['cover_pic'] = "";
 			if ($fileInfo) {
 				$taskInfo['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $fileInfo->url);
+				$taskInfo['cover_pic_thumb'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $fileInfo->url).OSS_MINI_TASK_DETAIL;
 			}
 			
 			// 获取用户的任务记录
