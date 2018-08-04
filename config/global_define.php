@@ -150,7 +150,6 @@ define('ERROR_PAY_ITEM', 'E0014');
 define('ERROR_TASK_FINISHED', 'E0015');
 define('ERROR_TASK_DAY_HELP_LIMIT', 'E0016');
 define('ERROR_TASK_DAY_LIMIT', 'E0017');
-define('ERROR_TASK_DAY_OP_LIMIT', 'E0017');
 define('ERROR_WX_AUTH', 'E0018');
 define('ERROR_TASK_SHARE_COUNT_LESS', 'E0019');
 define('ERROR_TAKE_MORE_ONE', 'E0020');
@@ -158,6 +157,7 @@ define('ERROR_TAKE_MORE', 'E0021');
 define('ERROR_TAKE', 'E0022');
 define('ERROR_TASK_DESP_UNLAW', 'E0023');           // 任务描述含有非法词汇
 define('ERROR_UPLOAD_FILE_UNLAW', 'E0024');         // 上传图片含有非法内容
+define('ERROR_TASK_DAY_OP_LIMIT', 'E0025');
 define('ERROR_UPLOAD', 'E0303');
 define('ERROR_UPLOAD_FILE_TYPE', 'E0304');
 define('ERROR_LOGIC', 'E9999');

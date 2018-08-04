@@ -127,13 +127,13 @@ class DBManager {
 		// 点击赏金分数
 		$clickCount = $_POST['click_count'] ? intval($_POST['click_count']) : 0;
 		
-		if($clickCount < 50) {
+		if($clickCount < 10) {
 			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_CLICK_COUNT_LESS);
 		}
 		
 		// 检查分享份数
 		$shareCount = $_POST['share_count'] ? intval($_POST['share_count']) : 0;
-		if ($shareCount < 20) {
+		if ($shareCount < 5) {
 			return ReturnMessageManager::buildReturnMessage(ERROR_TASK_SHARE_COUNT_LESS);
 		}
 		

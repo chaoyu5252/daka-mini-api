@@ -736,7 +736,6 @@ class ApiProcessor {
 				return ReturnMessageManager::buildReturnMessage(ERROR_TASK_DAY_LIMIT);
 			}
 			
-			
 			// 获取用户数据
 			$user = User::findFirst("id = ".$uid);
 			$user->setTransaction($transaction);
