@@ -293,7 +293,7 @@ class ApiProcessor {
 				$now = time();
 				foreach ($tasks as $task) {
 					$item = $task->r->toArray();
-					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url);
+					$item['cover_pic'] = Utils::getFullUrl(OSS_BUCKET_RTCOVER, $task->url).OSS_MINI_INDEX;
 					
 					$status = $item['status'];
 					if ($now >= $item['end_time']) {
