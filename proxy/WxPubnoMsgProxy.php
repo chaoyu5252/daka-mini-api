@@ -64,11 +64,21 @@ class WxPubnoMsgProxy
 			    "msgtype": "link",
 			    "link": {
 			          "title": "大咖悬赏充值",
-			          "description": "大咖悬赏-新概念传播平台, http://zombiepang.yuanshuoit.com/pay?mini_openid='.$this->toUserOpenId.'",
+			          "description": "pay?mini_openid='.$this->toUserOpenId.'",
 			          "url": "http://zombiepang.yuanshuoit.com/pay?mini_openid='.$this->toUserOpenId.'",
 			          "thumb_url": "http://api.dakaapp.com/share_icon.png"
 			    }
 			}';
+//		$post_data = '{
+//			    "touser": "'.$this->toUserOpenId.'",
+//			    "msgtype": "link",
+//			    "link": {
+//			          "title": "大咖悬赏充值",
+//			          "description": "大咖悬赏-新概念传播平台, http://zombiepang.yuanshuoit.com/pay?mini_openid='.$this->toUserOpenId.'",
+//			          "url": "http://zombiepang.yuanshuoit.com/pay?mini_openid='.$this->toUserOpenId.'",
+//			          "thumb_url": "http://api.dakaapp.com/share_icon.png"
+//			    }
+//			}';
 		curl_setopt($curl2, CURLOPT_POSTFIELDS, $post_data);
 		//执行命令
 		$data = curl_exec($curl2);
