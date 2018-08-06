@@ -20,14 +20,14 @@ class PayProcessor {
 		try {
 			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
 			
-			$unionid = $_POST['union_id'];
+			$openid = $_POST['mini_openid'];
 			$totalFee = $_POST['total_fee'] ? floatval($_POST['total_fee']) : 0;
 			$orderNum = $_POST['order_num'] ? trim($_POST['order_num']) : '';
 			$orderRemark = $_POST['order_remark'] ? trim($_POST['order_remark']) : '';
 			$data = [];
 			
 			$user = User::findFirst([
-				"conditions" => "unionid='".$unionid."'"
+				"conditions" => "openid='".$openid."'"
 			]);
 			// 用户不存在
 			if (!$user) {

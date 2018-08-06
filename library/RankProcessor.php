@@ -42,7 +42,6 @@ class RankProcessor {
 						}
 					}
 				}
-				
 			}
 			
 			$redis->close();
