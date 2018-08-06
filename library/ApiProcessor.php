@@ -684,7 +684,8 @@ class ApiProcessor {
 				}
 				// 提交事务
 				$data = [
-					'fid' => intval($files->id)
+					'fid' => intval($files->id),
+					'url' => $ossRs['info']['url']
 				];
 				// 事务提交
 				return Utils::commitTcReturn($di, $data, 'E0000');
@@ -692,7 +693,6 @@ class ApiProcessor {
 				return ReturnMessageManager::buildReturnMessage(ERROR_UPLOAD);
 			}
 		} catch (\Exception $e) {
-			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
