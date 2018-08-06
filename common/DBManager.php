@@ -74,20 +74,37 @@ use Phalcon\Mvc\Model\Transaction\Failed as TcFailed;
 class DBManager {
 	
 	// 检查当日任务数量
-	public static function checkDayTaskTimes($uid)
+	public static function checkDayTaskTimes($uid, $taskId)
 	{
 		$now = time();
 		$dayBeginTime = $now - ($now % 86400);
 		$dayEndTime = $dayBeginTime + 86400;
 		$records = RewardTaskRecord::find([
 			"conditions" => "uid = ".$uid." AND create_time >= ".$dayBeginTime." AND create_time <=".$dayEndTime,
-			"columns" => "distinct(id)"
+			"columns" => "task_id, op_type"
 		]);
 		$count = 0;
+		$doneTasked = false;
 		if ($records) {
-			$count = count($records -> toArray());
+			// 已存在的任务记录
+			$doneRecourds = [];
+			foreach ($records as $record) {
+				if  ($doneTasked ==false && $record->task_id == $taskId) {
+					$doneTasked = true;
+				}
+				if (array_key_exists($record->task_id, $doneRecourds)) {
+					$opList = $doneRecourds[$record->task_id];
+					if (!in_array($record->op_type, $opList)) {
+						$opList = array_push($opList, $record->op_type);
+					}
+					$doneRecourds[$record->task_id] = $opList;
+				} else {
+					$doneRecourds[$record->task_id] = [$record->op_type];
+				}
+			}
+			$count = count($doneRecourds);
 		}
-		if ($count == 5) {
+		if ($count == 5 && $doneTasked == false) {
 			return false;
 		}
 		return true;

@@ -728,7 +728,7 @@ class ApiProcessor {
 			}
 			
 			// 检查用户是否已经超过了每日参与任务的最大数量
-			if (!DBManager::checkDayTaskTimes($uid)) {
+			if (!DBManager::checkDayTaskTimes($uid, $taskId)) {
 				$task->total_click_count += 1;
 				if (!$task->save()) {
 					$transaction->rollback();
@@ -853,7 +853,7 @@ class ApiProcessor {
 			$task->total_share_count += 1;
 			
 			// 检查用户是否已经超过了每日参与任务的最大数量
-			if (!DBManager::checkDayTaskTimes($uid)) {
+			if (!DBManager::checkDayTaskTimes($uid, $taskId)) {
 				$task->total_share_count += 1;
 				if (!$task->save()) {
 					$transaction->rollback();

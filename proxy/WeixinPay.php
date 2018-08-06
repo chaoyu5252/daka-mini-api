@@ -174,7 +174,7 @@ class WeixinPay {
 		} else {
 			$unifiedorder = $this->transfers_unifiedorder();
 		}
-		if ($unifiedorder['return_code'] == "SUCCESS") {
+		if ($unifiedorder['result_code'] == "SUCCESS") {
 			$parameters = array(
 				'appId' => $this->appid, //小程序ID
 				'timeStamp' => '' . time() . '', //时间戳
