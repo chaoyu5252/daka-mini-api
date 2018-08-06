@@ -169,8 +169,7 @@ class PayProcessor {
 			$wxPay = new WeixinPay($appid, $user->openid, $mch_id, $mch_key, $out_trade_no, $body, $takeFee, '');
 			$wxPayRs = $wxPay->transfers_pay();
 			if (array_key_exists('result_code', $wxPayRs)) {
-				
-				return ReturnMessageManager::buildReturnMessage($di, ERROR_TAKE);
+				return ReturnMessageManager::buildReturnMessage(ERROR_TAKE);
 			}
 			// 更新流水和订单, 并返回
 			return Utils::commitTcReturn($di, ['balance' => $newBalance], ERROR_SUCCESS);
