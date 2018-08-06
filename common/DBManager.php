@@ -165,18 +165,22 @@ class DBManager {
 		switch ($shareJoinType)
 		{
 			case 1:
-				$shareJoinCount = 10;
+				$shareJoinCount = 5;
 				$minSharePrice = 2.50;
 				break;
 			case 2:
+				$shareJoinCount = 10;
+				$minSharePrice = 2.50;
+				break;
+			case 3:
 				$shareJoinCount = 20;
 				$minSharePrice =6.00;
 				break;
-			case 3:
+			case 4:
 				$shareJoinCount = 30;
 				$minSharePrice = 9.00;
 				break;
-			case 4:
+			case 5:
 				$shareJoinCount = 40;
 				$minSharePrice = 15.00;
 				break;
