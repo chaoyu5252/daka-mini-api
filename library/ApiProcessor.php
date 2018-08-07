@@ -104,7 +104,7 @@ class ApiProcessor {
 			// 事务提交
 			return Utils::commitTcReturn($di, $data, ERROR_SUCCESS);
 		} catch (\Exception $e) {
-			var_dump($e);
+//			var_dump($e);
 			return Utils::processExceptionError($di, $e);
 		}
 	}
