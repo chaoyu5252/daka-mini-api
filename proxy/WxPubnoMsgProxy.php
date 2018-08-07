@@ -65,7 +65,7 @@ class WxPubnoMsgProxy
 			    "link": {
 			          "title": "大咖悬赏充值",
 			          "description": "pay?mini_openid='.$this->toUserOpenId.'",
-			          "url": "http://zombiepang.yuanshuoit.com/pay?mini_openid='.$this->toUserOpenId.'",
+			          "url": "http://zombiepang.yuanshuoit.com/pay/'.$this->toUserOpenId.'",
 			          "thumb_url": "http://api.dakaapp.com/share_icon.png"
 			    }
 			}';
