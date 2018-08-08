@@ -120,6 +120,7 @@ class RankProcessor {
 					foreach ($users as $user) {
 						if ($user->id == $memberId) {
 							$item = [
+								'id' => $user->id,
 								'nickname' => $user->nickname,
 								'avatar' => $user->wx_avatar,
 								'gender' => $user->gender,
