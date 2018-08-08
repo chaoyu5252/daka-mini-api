@@ -922,10 +922,18 @@ class ApiProcessor {
 			$query = new Query($phpl, $di);
 			$records = $query->execute();
 			$rList = [];
+			$now =  time();
 			if ($records) {
 				// 检查
 				foreach ($records as $record) {
 					$item = $record->rr->toArray();
+					
+					$status = $item['status'];
+					if ($now >= $item['end_time']) {
+						$status = TASK_STATUS_END;
+					}
+					$item['status'] = $status;
+					
 					$item['avatar'] = $record->wx_avatar;
 					$item['nickname'] = $record->nickname;
 					$item['gender'] = $record->gender;
