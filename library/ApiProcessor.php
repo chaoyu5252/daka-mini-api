@@ -488,10 +488,17 @@ class ApiProcessor {
 			}
 			
 			// 获取文件位置
-			
+			$now = time();
 			$taskInfo['clicked'] = $isCliked;
 			$taskInfo['my_share_join_count'] = $shareCount;
 			$taskInfo['shared'] = $isShared;
+			
+			$status = $taskInfo['status'];
+			if ($now >= $taskInfo['end_time']) {
+				$status = TASK_STATUS_END;
+			}
+			$taskInfo['status'] = $status;
+			
 			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['task_info' => $taskInfo]);
 		} catch (\Exception $e) {
 			return Utils::processExceptionError($di, $e);
@@ -927,12 +934,6 @@ class ApiProcessor {
 				// 检查
 				foreach ($records as $record) {
 					$item = $record->rr->toArray();
-					
-					$status = $item['status'];
-					if ($now >= $item['end_time']) {
-						$status = TASK_STATUS_END;
-					}
-					$item['status'] = $status;
 					
 					$item['avatar'] = $record->wx_avatar;
 					$item['nickname'] = $record->nickname;
