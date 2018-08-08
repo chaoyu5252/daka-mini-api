@@ -193,6 +193,11 @@ class RedisClient {
     {
         return "world_rank";
     }
+	
+	public static function dakaRankKey()
+	{
+		return "daka_rank";
+	}
     
     // 全服周粉丝
     public static function weekFansKey()

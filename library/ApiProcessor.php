@@ -574,6 +574,14 @@ class ApiProcessor {
 			$data = [
 				'task_id' => $task->id
 			];
+			
+			// 添加到大咖排行榜
+			$redis = Utils::getService($di, SERVICE_REDIS);
+			$dkRankKey = RedisClient::dakaRankKey();
+			$nowAmount = $redis->zScore($dkRankKey, $uid);
+			$redis->zAdd($dkRankKey, $nowAmount + $taskAmount * 100, $uid);
+			$redis->close();
+			
 			// 事务提交
 			return Utils::commitTcReturn($di, $data, 'E0000');
 		} catch (\Exception $e) {

@@ -181,6 +181,11 @@ $app->post('/_API/_getFriendRank', function () use ($di) {
 	return RankProcessor::getFriendRank($di);
 });
 
+// 获取大咖排行
+$app->post('/_API/_getDakaRank', function () use ($di) {
+	return RankProcessor::getDakaRank($di);
+});
+
 $app->get('/_API/_test', function () use ($di) {
 	return Utils\Utils::getAcessToken($di);
 });

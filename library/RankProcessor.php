@@ -101,6 +101,44 @@ class RankProcessor {
 		}
 	}
 	
+	public static function getDakaRank($di)
+	{
+		try {
+			$redis = Utils::getService($di, SERVICE_REDIS);
+			$rankMembers = $redis->zRevRange(RedisClient::dakaRankKey(), 0, -1, true);
+			$memberIds = '';
+			foreach ($rankMembers as $memberId => $score)
+			{
+				$memberIds .= ','.$memberId;
+			}
+			$data = [];
+			if ($memberIds) {
+				$memberIds = substr($memberIds, 1);
+				$users = User::find("id in (".$memberIds.")");
+				foreach ($rankMembers as $memberId => $income) {
+					$money = $rankMembers[$memberId] ? floatval($rankMembers[$memberId] / 100) : 0;
+					foreach ($users as $user) {
+						if ($user->id == $memberId) {
+							$item = [
+								'nickname' => $user->nickname,
+								'avatar' => $user->wx_avatar,
+								'gender' => $user->gender,
+								'money' => $money
+							];
+							array_push($data, $item);
+							break 1;
+						}
+					}
+				}
+			}
+			
+			$redis->close();
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['rank_list' => $data]);
+		} catch (\Exception $e) {
+			var_dump($e);
+			return ReturnMessageManager::buildReturnMessage(ERROR_LOGIC);
+		}
+	}
 	
 }
 
