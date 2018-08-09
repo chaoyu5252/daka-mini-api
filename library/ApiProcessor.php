@@ -948,6 +948,28 @@ class ApiProcessor {
 		}
 	}
 	
+	public static function checkTaskShareRecord($di)
+	{
+		try {
+			$shareUid = $_POST['share_uid'] ? intval($_POST['share_uid']) : 0;
+			$taskId = $_POST['task_id'] ? intval($_POST['task_id']) : 0;
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+			
+			// 查询分享记录
+			$record = RewardTaskRecord::findFirst([
+				"conditions" => "task_id = ".$taskId . ' AND op_type= 2 AND uid ='.$shareUid,
+				"for_update" => true
+			]);
+			$hasRecord = 1;
+			if (!$record) {
+				$hasRecord = 0;
+			}
+			return ReturnMessageManager::buildReturnMessage(ERROR_SUCCESS, ['has_record' => $hasRecord]);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
 	// 增加任务用户分享人数
 	public static function addTaskShareCount($di)
 	{

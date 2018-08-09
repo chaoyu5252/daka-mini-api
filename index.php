@@ -116,6 +116,10 @@ $app->post('/_API/_shareTaskJoinCount', function () use ($di) {
 	return ApiProcessor::addTaskShareCount($di);
 });
 
+$app->post('/_API/_checkTaskShareRecord', function () use ($di) {
+	return ApiProcessor::checkTaskShareRecord($di);
+});
+
 $app->post('/_API/_publishTask', function() use ($di){
 	return ApiProcessor::publishTask($di);
 });
