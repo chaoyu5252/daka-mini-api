@@ -5446,7 +5446,7 @@ class DBManager {
     	$transaction = Utils::getService($di, SERVICE_TRANSACTION);
     	$now = time();
 	    $tasks = RewardTask::find([
-	    	"conditions" => "owner_id = ".$uid." AND end_time <= ".$now
+	    	"conditions" => "owner_id = ".$uid." AND status !=0 AND end_time <= ".$now
 	    ]);
 	    // 如果有任务
 	    $rufundAmount = 0;
