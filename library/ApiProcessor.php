@@ -73,16 +73,15 @@ class ApiProcessor {
 			$tokenSignTime = $now + TOKEN_KEEP;
 			if ($user) {
 				$loginStatus = LOGIN_STATUS_LOGIN;
+				// TODO 任务结束未消耗的金额退掉
+				$rufundAmount = DBManager::refundEndTask($di, $user->id);
+				$user->balance += $rufundAmount;
 			} else {
 				$loginStatus = LOGIN_STATUS_REG;
 				// TODO 执行用户注册的操作
 				$user = new User();
 				$user->create_time = $now;
 			}
-			
-			// TODO 任务结束未消耗的金额退掉
-			$rufundAmount = DBManager::refundEndTask($di, $user->id);
-			$user->balance += $rufundAmount;
 			// 拉取授权
 //			$accessToken = Utils::getAcessToken($di);
 //			if (!$accessToken) {
