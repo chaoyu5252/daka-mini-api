@@ -56,7 +56,7 @@ define('OSS_BUCKET_GAVATAR', 'gavatar');
 define('OSS_BUCKET_BG', 'background');
 define('OSS_BUCKET_PUBLIC', 'public');
 
-define('OSS_BUCKET_RTCOVER_REQ_ENDPOINT', 'dakaapp-rtcover.oss-cn-beijing.aliyuncs.com');
+define('OSS_BUCKET_RTCOVER_REQ_ENDPOINT', 'static.dakaapp.com.w.kunlungr.com');
 define('OSS_BUCKET_AVATAR_REQ_ENDPOINT', 'dakaapp-avatar.oss-cn-beijing.aliyuncs.com');
 
 // 服务宏
