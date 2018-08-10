@@ -5452,7 +5452,8 @@ class DBManager {
 	    $rufundAmount = 0;
 	    if ($tasks) {
 	        foreach ($tasks as $task) {
-	            $rufundAmount += $task->balance;
+	        	$tmpAmount = $task->balance;
+	            $rufundAmount += $tmpAmount;
 	            $task->balance = floatval(0);
 	            $task->status = TASK_STATUS_END;
 	            if (!$task->save()){
@@ -5462,7 +5463,7 @@ class DBManager {
 	            $balanceFlow = new BalanceFlow();
 	            $balanceFlow->setTransaction($transaction);
 	            $balanceFlow->op_type = BALANCE_FLOW_RUFUND;
-		        $balanceFlow->op_amount = $task->balance;
+		        $balanceFlow->op_amount = $tmpAmount;
 		        $balanceFlow->target_id = $task->id;
 		        $balanceFlow->uid = $task->owner_id;
 		        $balanceFlow->user_order_id = '';

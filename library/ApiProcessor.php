@@ -54,7 +54,6 @@ class ApiProcessor {
 	{
 		try {
 			$code = $_POST['code'];
-			error_log('wx post code:'.$code);
 			$verfiyRs = WxLoginProxy::loginVerify($di, $code);
 			if (!$verfiyRs) {
 				return ReturnMessageManager::buildReturnMessage(ERROR_LOGIN_VERIFY);
