@@ -275,7 +275,7 @@ class ApiProcessor {
 			
 			$phpl = 'SELECT r.*, f.url FROM Fichat\Models\RewardTask as r '
 				.'LEFT JOIN Fichat\Models\Files as f ON r.cover_pic = f.id '
-				.'WHERE 1 ORDER BY r.task_amount DESC, r.status DESC LIMIT '.$startIdx.','.PAGE_SIZE;
+				.'WHERE 1 ORDER BY r.id DESC LIMIT '.$startIdx.','.PAGE_SIZE;
 			$query = new Query($phpl, $di);
 			$tasks = $query->execute();
 			$taskList = [];
