@@ -81,6 +81,9 @@ class ApiProcessor {
 				$user->create_time = $now;
 			}
 			
+			// TODO 任务结束未消耗的金额退掉
+			$rufundAmount = DBManager::refundEndTask($di, $user->id);
+			$user->balance += $rufundAmount;
 			// 拉取授权
 //			$accessToken = Utils::getAcessToken($di);
 //			if (!$accessToken) {

@@ -130,6 +130,7 @@ define('BALANCE_FLOW_TAKE', 3);
 define('BALANCE_FLOW_PUBTASK', 4);
 define('BALANCE_FLOW_CLICKTASK', 5);
 define('BALANCE_FLOW_SHARETASK', 6);
+define('BALANCE_FLOW_RUFUND', 7);
 
 define('OSS_MINI_INDEX', '?x-oss-process=image/resize,m_mfit,w_338,h_180,limit_0/auto-orient,1/format,png,mage/crop,w_338,h_180,g_north');
 define('OSS_MINI_TASK_DETAIL', '?x-oss-process=image/resize,m_mfit,w_338,h_216,limit_0/auto-orient,1/format,png,mage/crop,w_338,h_216,g_north');

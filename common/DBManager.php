@@ -5439,6 +5439,43 @@ class DBManager {
         	return $task->status;
         }
     }
+    
+    // 退款结束的任务
+    public static function refundEndTask($di, $uid)
+    {
+    	$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+    	$now = time();
+	    $tasks = RewardTask::find([
+	    	"conditions" => "owner_id = ".$uid." AND end_time <= ".$now
+	    ]);
+	    // 如果有任务
+	    $rufundAmount = 0;
+	    if ($tasks) {
+	        foreach ($tasks as $task) {
+	            $rufundAmount += $task->balance;
+	            $task->balance = floatval(0);
+	            $task->status = TASK_STATUS_END;
+	            if (!$task->save()){
+	                $transaction->rollback();
+	            }
+	            // 增加一条余额流水
+	            $balanceFlow = new BalanceFlow();
+	            $balanceFlow->setTransaction($transaction);
+	            $balanceFlow->op_type = BALANCE_FLOW_RUFUND;
+		        $balanceFlow->op_amount = $task->balance;
+		        $balanceFlow->target_id = $task->id;
+		        $balanceFlow->uid = $task->owner_id;
+		        $balanceFlow->user_order_id = '';
+		        $balanceFlow->create_time = $now;
+	            if (!$balanceFlow->save()) {
+	            	$transaction->rollback();
+	            }
+	        }
+	    }
+	    
+	    // 获取用户
+	    return $rufundAmount;
+    }
 	
 	// 检查查看动态的权限
 //	public static function checkLookDynRights($uid, $targetId, $dynFriends)
