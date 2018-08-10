@@ -190,7 +190,8 @@ class PayProcessor {
 			
 			// 获取流水
 			$bfs = BalanceFlow::find([
-				"conditions" => "uid = ".$uid
+				"conditions" => "uid = ".$uid,
+				"order" => "id desc"
 			]);
 			
 			$balanceFlows = [];
