@@ -1027,6 +1027,7 @@ class ApiProcessor {
 					// 获取任务的状态
 					$taskStatus = DBManager::getTaskStatus($task);
 					$task->status = $taskStatus;
+					$task->balance = $newTaskBalance;
 					// 更新任务数据
 					if (!$task->save()) {
 						$transaction->rollback();
