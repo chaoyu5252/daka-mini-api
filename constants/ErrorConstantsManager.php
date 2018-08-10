@@ -28,7 +28,6 @@ class ErrorConstantsManager
 	    ERROR_PAY_ITEM => '错误支付类型',
 	    ERROR_UPLOAD => '上传文件失败',
 	    ERROR_TASK_DESP_UNLAW => '任务描述含有非法词汇',
-	    ERROR_TASK_PIC_UNLAW => '任务图片含有非法内容',
 	    ERROR_UPLOAD_FILE_TYPE => '错误的文件类型',
 	    ERROR_LOGIC => '服务器内部错误'
     );
