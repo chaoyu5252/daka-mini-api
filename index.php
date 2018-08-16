@@ -69,6 +69,21 @@ $app->post('/_API/_wxUpUserInfo', function() use ($di){
 	return ApiProcessor::wxInitUserInfo($di);
 });
 
+// 更新用户信息
+$app->post('/_API/_editUserInfo', function() use ($di){
+	return ApiProcessor::editUserInfo($di);
+});
+
+// 短信
+$app->post('/_API/_sendSMS', function() use ($di){
+	return ApiProcessor::processSMS($di);
+});
+
+// 绑定手机号码
+$app->post('/_API/_bindPhone', function () use ($di) {
+	return ApiProcessor::bindPhone($di);
+});
+
 // 推送支付客服消息
 $app->post('/_API/_pushWxClientMsg', function () use ($di){
 	return ApiProcessor::pushWxClientPayMsg($di);

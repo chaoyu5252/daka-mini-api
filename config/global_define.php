@@ -165,5 +165,7 @@ define('ERROR_UPLOAD_FILE_UNLAW', 'E0024');         // 上传图片含有非法�
 define('ERROR_TASK_DAY_OP_LIMIT', 'E0025');
 define('ERROR_UPLOAD', 'E0303');
 define('ERROR_UPLOAD_FILE_TYPE', 'E0304');
+define('ERROR_SEND_SMS', 'E0305');                  // 发送短信失败
+define('ERROR_VAILD_PHONE', 'E0306');
 define('ERROR_LOGIC', 'E9999');
 

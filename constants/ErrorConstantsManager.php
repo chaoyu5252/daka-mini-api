@@ -29,6 +29,8 @@ class ErrorConstantsManager
 	    ERROR_UPLOAD => '上传文件失败',
 	    ERROR_TASK_DESP_UNLAW => '任务描述含有非法词汇',
 	    ERROR_UPLOAD_FILE_TYPE => '错误的文件类型',
+	    ERROR_SEND_SMS => '发送短信失败',
+	    ERROR_VAILD_PHONE => '验证手机号失败',
 	    ERROR_LOGIC => '服务器内部错误'
     );
 }

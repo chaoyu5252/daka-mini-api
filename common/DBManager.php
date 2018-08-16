@@ -1350,7 +1350,7 @@ class DBManager {
 	public static function vaildSignToken($phone, $vCode, $type)
 	{
 		$data = SignToken::findFirst([
-			"phone = ".$phone." AND code = ".$vCode." AND type = ".$type
+			"phone = ".$phone." AND code = ".$vCode
 		]);
 		if ($data) {
 			$now = time();

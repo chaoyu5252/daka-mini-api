@@ -158,6 +158,101 @@ class ApiProcessor {
 		}
 	}
 	
+	/** 更新用户资料 */
+	public static function editUserInfo($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$uid = $gd->uid;
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+			
+			$name = $_POST['name'] ? trim($_POST['name']) : false;
+			$user = User::findFirst("id = ".$uid);
+			$user->setTransaction($transaction);
+			$age = $_POST['age']? intval($_POST['age']) : 1;
+			if ($name) {
+				$user->name = $name;
+			}
+			// 年龄
+			if ($age > 0) {
+				$user->age = $age;
+			}
+			if (!$user->save()) {
+				$transaction->rollback();
+			}
+			return Utils::commitTcReturn($di, []);
+		} catch (\Exception $e) {
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	/**
+	 * 短信验证码
+	 *
+	 * @param $di
+	 * @return mixed
+	 */
+	public static function processSMS($di){
+		try {
+			$phone = $_POST['phone'];
+			
+			if(!$phone){  return ReturnMessageManager::buildReturnMessage('E0001',null); }
+			if(!preg_match("/^1(3|4|5|7|8)\d{9}$/",$phone)){
+				return ReturnMessageManager::buildReturnMessage('E0004',null);
+			}
+			/** 类型
+			 * 0: 注册
+			 * 1: 登录
+			 * 2: 修改支付密码
+			 * 3: 修改手机号
+			 * 4: 提现
+			 */
+
+			// 发送验证码
+			$vCode = SmsHuaWeiProxy::sendSms($di, $phone);
+			if (!$vCode) {
+				return ReturnMessageManager::buildReturnMessage('E0308');
+			}
+			$re = DBManager::saveSignToken($di, $vCode, $phone, SMSBUSS_TYPE_BINDPHONE);
+			if(!$re){return ReturnMessageManager::buildReturnMessage('E9999',null); }
+			// 发送成功
+			$sendSuccess = 1;
+			// 返回信息
+			return ReturnMessageManager::buildReturnMessage('E0000',array(
+				'sendSuccess' => $sendSuccess,
+				'vCode' => $vCode
+			));
+		}catch ( \Exception $e ) {
+			var_dump($e);
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
+	/** 绑定用户手机号 */
+	public static function bindPhone($di)
+	{
+		try {
+			$gd = Utils::getService($di, SERVICE_GLOBAL_DATA);
+			$transaction = Utils::getService($di, SERVICE_TRANSACTION);
+			$uid = $gd->uid;
+			$phone = $_POST['phone'] ? trim($_POST['phone']): '';
+			$code = $_POST['code'] ? trim($_POST['code']) : '';
+			if (!$phone || !$code) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_VAILD_PHONE);
+			}
+			if( !DBManager::vaildSignToken($phone, $code, SMSBUSS_TYPE_BINDPHONE)) {
+				return ReturnMessageManager::buildReturnMessage(ERROR_VAILD_PHONE);
+			}
+			$user = User::findFirst($uid);
+			$user->phone = $phone;
+			$user->setTransaction($transaction);
+			return Utils::commitTcReturn($di, []);
+		} catch ( \Exception $e ) {
+//			var_dump($e);
+			return Utils::processExceptionError($di, $e);
+		}
+	}
+	
 	/** 推送微信支付客服消息 */
 	public static function pushWxClientPayMsg($di)
 	{
