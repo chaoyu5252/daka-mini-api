@@ -246,6 +246,9 @@ class ApiProcessor {
 			$user = User::findFirst($uid);
 			$user->phone = $phone;
 			$user->setTransaction($transaction);
+			if (!$user->save()) {
+				$transaction->rollback();
+			}
 			return Utils::commitTcReturn($di, []);
 		} catch ( \Exception $e ) {
 //			var_dump($e);
