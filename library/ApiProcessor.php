@@ -329,6 +329,9 @@ class ApiProcessor {
 			
 			$data = [
 				'id' => $user->id,
+				'name' => $user->name,
+				'phone' => $user->phone,
+				'age' => $user->age,
 				'nickname' => $user->nickname,
 				'gender' => $user->gender,
 				'avatar' => $user->wx_avatar,
